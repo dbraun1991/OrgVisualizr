@@ -1,5 +1,6 @@
 import { DataModel } from './data-model.js';
 import { LayoutEngine } from './layout-engine.js';
+import { SectionsLayout } from './sections-layout.js';
 import { ChartRenderer } from './chart-renderer.js';
 
 import { sortPaletteRainbow, DEPARTMENT_PALETTE_BASE } from './color-utils.js';
@@ -54,6 +55,7 @@ class App {
     constructor() {
         this.dataModel = new DataModel();
         this.layoutEngine = new LayoutEngine();
+        this.sectionsLayout = new SectionsLayout();
         this.renderer = new ChartRenderer('#orgvisualizr-container');
 
         this.initAlpine();
@@ -72,6 +74,8 @@ class App {
                 editorVisible: true,
                 activeTab: 'visual',
                 theme: 'dark',
+                /** 'tree' (the org chart) or 'sections' (the department/group abstraction). */
+                viewMode: 'tree',
                 hideLeaves: false,
                 manageMode: false,
                 rawJson: '',
@@ -143,6 +147,7 @@ class App {
                     this.$watch('editorVisible', () => this.updateUrlParams());
                     this.$watch('currentFileName', () => this.updateUrlParams());
                     this.$watch('hideLeaves', () => this.renderChart(this.data));
+                    this.$watch('viewMode', () => this.renderChart(this.data));
 
                     // Keep the raw JSON string and chart in sync whenever the visual editor
                     // mutates the underlying data object.
@@ -191,6 +196,14 @@ class App {
                 },
 
                 /**
+                 * Flips between the Tree view (the org chart) and the Sections view (the
+                 * department/group abstraction over leads only).
+                 */
+                toggleView() {
+                    this.viewMode = this.viewMode === 'tree' ? 'sections' : 'tree';
+                },
+
+                /**
                  * Flips light/dark theme, persists the choice, and applies it immediately.
                  */
                 toggleTheme() {
@@ -231,8 +244,13 @@ class App {
                     try {
                         const clone = JSON.parse(JSON.stringify(jsonData));
                         const normalizedData = window.app.dataModel.validateAndNormalize(clone);
-                        const layout = window.app.layoutEngine.calculate(normalizedData, { hideLeaves: this.hideLeaves });
-                        window.app.renderer.render(layout);
+                        if (this.viewMode === 'sections') {
+                            const layout = window.app.sectionsLayout.calculate(normalizedData);
+                            window.app.renderer.renderSections(layout);
+                        } else {
+                            const layout = window.app.layoutEngine.calculate(normalizedData, { hideLeaves: this.hideLeaves });
+                            window.app.renderer.render(layout);
+                        }
                         this.jsonError = '';
                     } catch (e) {
                         console.error('Render error:', e);

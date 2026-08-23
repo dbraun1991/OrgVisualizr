@@ -34,12 +34,13 @@ Each node represents one *position* in the org chart, held by a primary occupant
 | `parentId` | yes | The manager's `id`, or `null` for the single root. |
 | `name` | recommended | Display name of the primary occupant. |
 | `title` | no | Role / job title. |
-| `department` | no | Shown under the title; also feeds the accent color if `color` is unset. |
+| `department` | no | Shown under the title; also feeds the accent color if `color` is unset. Doubles as the "section" a node belongs to in the Sections view — see [Sections View](#sections-view-group) below. |
 | `color` | no | Hex color (e.g. `"#0064B0"`) for the card's accent bar and avatar circle. |
 | `description` | no | Markdown text, rendered in the hover tooltip. |
 | `collapsed` | no | If `true`, this node's subtree is hidden in the chart and replaced with a "+N" badge on this node. **This is persisted data**, not a view toggle — see [Collapse vs. Hide Leaves](#collapse-vs-hide-leaves) below. |
 | `coOccupants` | no | Array of `{ name, title, color, description }` — see [Co-Occupancy](#co-occupancy-coOccupants). |
 | `placement` | no | `"line"` (default) or `"staff"` — see [Staff Placement](#staff-placement-placement). |
+| `group` | no | Free-text sub-team name, scoped within `department` (e.g. `"Development"` within `"Technology"`). Only used by the Sections view — see [Sections View](#sections-view-group) below; has no effect on the org chart itself. |
 
 ## The Tree: `id` + `parentId`
 
@@ -85,6 +86,24 @@ A node with `"placement": "staff"` renders **beside** its parent with a dashed c
 **v1 constraint**: a `"staff"` node cannot itself have children — no other node may reference it as `parentId`. `DataModel` rejects this with a specific error if violated. This is a deliberate scope decision, not an oversight: staff nodes are computed entirely outside the main tree-layout pass and positioned beside their parent afterward, which only works cleanly because they're leaves. See [ADR-004](adrs/ADR-004-co-occupancy-and-staff-placement.md) for what it would take to lift this.
 
 A staff node can still have `coOccupants` — the two features are orthogonal (e.g. two people co-holding one assistant role).
+
+## Sections View: `group`
+
+The header's Tree/Sections toggle switches the whole canvas to a second, more abstract view: instead of the org chart, it shows one box per `department` ("section"), and within it, one sub-box per distinct `group` value found among that department's *leads* — nodes with at least one direct report. Leaves (nodes with no reports of their own) are never shown in this view, matching the definition "Hide leaves" already uses.
+
+```json
+{ "id": "eng-mgr", "parentId": "cto", "name": "Alex Kim", "title": "Engineering Manager", "department": "Technology", "group": "Development" }
+```
+
+Rules:
+
+- `group` is scoped *within* `department` — two different departments can each have a group named the same thing (e.g. two "Operations" groups) without colliding; they render as separate boxes in their respective sections.
+- A lead with no `group` set renders directly under its section, not nested in any group box — so a chart with no `group` fields at all still renders in Sections view (every lead, flat, under its department); this keeps `group` fully backward-compatible with existing charts.
+- Leads within a group (or ungrouped, directly under a section) are sorted by their tier — depth in the org tree — and indented accordingly, so a lead's relative seniority within that group is visible at a glance even though the view otherwise omits the tree's connector lines.
+- The section name is drawn exactly once, at the top of the section box — never repeated per group.
+- `coOccupants` are not shown in Sections view; only the primary occupant of a lead position appears.
+
+See [`data/example.json`](../data/example.json) for a worked example covering all three cases (a department with multiple groups, a department with a mix of grouped and ungrouped leads, and a department with no groups at all).
 
 ## Collapse vs. Hide Leaves
 
@@ -160,4 +179,4 @@ Renders as a normal card with a "+N" badge (N = however many descendants `it-mgr
 
 ### Full realistic example
 
-See [`data/example.json`](../data/example.json) — the chart the app loads by default, exercising every feature above at once: a strict hierarchy, one co-led position, one staff position, and one explicitly collapsed node.
+See [`data/example.json`](../data/example.json) — the chart the app loads by default, exercising every feature above at once: a strict hierarchy, one co-led position, one staff position, one explicitly collapsed node, and (Technology) a department with multiple `group`s alongside an ungrouped lead.

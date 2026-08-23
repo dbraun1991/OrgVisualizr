@@ -34,6 +34,7 @@ Then open `http://localhost:8000`.
 - **Local save/load, with a proper manager** — named charts saved to browser `localStorage`; the header's "Files" button opens a modal listing every saved chart with load and delete actions.
 - **Import** — from a local JSON file (picker or drag-and-drop) or a remote HTTPS/HTTP URL.
 - **Export** — as JSON, SVG, PNG, PDF, or a nested-list Text/Markdown summary.
+- **Sections view** — a second, more abstract view (header toggle) that steps back from individuals: one box per department, with named sub-group boxes inside listing only leads (people with reports), sorted and indented by tier. Driven by an optional `group` field per node.
 - **Light and dark themes** — toggle in the header; persisted per-browser, applied before first paint (no flash).
 - **Localization** — English and German, with more languages easy to add.
 
@@ -52,6 +53,7 @@ This README covers the essentials for using the app. For everything else:
   | [ADR-003](docs/adrs/ADR-003-persistence-and-sharing.md) | `localStorage` + JSON/SVG/PNG/PDF export, no backend (share links removed, see ADR update) |
   | [ADR-004](docs/adrs/ADR-004-co-occupancy-and-staff-placement.md) | Co-leadership (`coOccupants`) and staff placement (`placement`) as attributes on the strict tree, not new edge types |
   | [ADR-005](docs/adrs/ADR-005-editor-guardrails-and-view-controls.md) | Delete only when childless; "Hide leaves"/"Manage" as view-only state, not data; saved charts deletable via the Files modal |
+  | [ADR-006](docs/adrs/ADR-006-sections-view.md) | Sections view: a second, more abstract department/group-of-leads view, driven by a new optional `group` field |
 
 ## License
 

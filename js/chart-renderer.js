@@ -1,5 +1,6 @@
-import { escapeHtml, sanitizeHtml, getInitials } from './utils.js';
+import { escapeHtml, sanitizeHtml, getInitials, truncateText } from './utils.js';
 import { getContrastTextColor } from './color-utils.js';
+import { renderSectionsSvg } from './sections-renderer.js';
 
 /**
  * Builds an orthogonal (right-angle) elbow connector path between a parent
@@ -212,19 +213,19 @@ export class ChartRenderer {
             .attr('class', 'org-card-name')
             .attr('x', 60)
             .attr('y', config.cardHeight / 2 - 14)
-            .text((o) => this._truncate(o.occupant.name || '', 20));
+            .text((o) => truncateText(o.occupant.name || '', 20));
 
         occupantGroups.append('text')
             .attr('class', 'org-card-title')
             .attr('x', 60)
             .attr('y', config.cardHeight / 2 + 4)
-            .text((o) => this._truncate(o.occupant.title || '', 22));
+            .text((o) => truncateText(o.occupant.title || '', 22));
 
         occupantGroups.append('text')
             .attr('class', 'org-card-department')
             .attr('x', 60)
             .attr('y', config.cardHeight / 2 + 21)
-            .text((o) => this._truncate(o.position.data.department || '', 24));
+            .text((o) => truncateText(o.position.data.department || '', 24));
 
         // Appended after (not before) the occupant cards above, so the badge paints
         // on top of them instead of being covered by the last card's opaque rect —
@@ -276,6 +277,26 @@ export class ChartRenderer {
     }
 
     /**
+     * Renders the abstracted "Sections" view — departments containing named
+     * sub-groups, listing only leads (people with direct reports), indented by
+     * tier. The actual SVG construction lives in sections-renderer.js; this method
+     * just owns the container/svgElement/zoom wiring, the same responsibility
+     * render() has above, so export (file-manager.js, which always reads
+     * `this.svgElement`) keeps working unmodified regardless of which view is
+     * currently on screen.
+     * @param {Object} layout - Output of SectionsLayout.calculate().
+     */
+    renderSections(layout) {
+        if (!this.container) return;
+        this.container.innerHTML = '';
+        if (!layout || !layout.sections) return;
+
+        const { svg, zoomGroup } = renderSectionsSvg(this.container, layout);
+        this.setupZoom(svg, zoomGroup);
+        this.svgElement = svg.node();
+    }
+
+    /**
      * The primary occupant (the node's own name/title/color/description) plus any
      * co-occupants, as a flat list for cluster rendering.
      * @param {Object} position - A normalized position ({data, ...}).
@@ -289,11 +310,6 @@ export class ChartRenderer {
             description: position.data.description
         };
         return [primary, ...(position.data.coOccupants || [])];
-    }
-
-    _truncate(str, max) {
-        if (!str) return '';
-        return str.length > max ? str.slice(0, max - 1) + '…' : str;
     }
 
     _markdown(text) {

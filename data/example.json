@@ -11,22 +11,31 @@
     { "id": "cfo", "parentId": "ceo", "name": "Maria Lopez", "title": "CFO", "department": "Finance", "color": "#66C028" },
     { "id": "cmo", "parentId": "ceo", "name": "Sam Patel", "title": "CMO", "department": "Marketing", "color": "#EE7623" },
 
-    { "id": "eng-mgr", "parentId": "cto", "name": "Alex Kim", "title": "Engineering Manager", "department": "Technology", "color": "#FFD300",
+    { "id": "eng-mgr", "parentId": "cto", "name": "Alex Kim", "title": "Engineering Manager", "department": "Technology", "color": "#FFD300", "group": "Development",
       "coOccupants": [ { "name": "Noah Bergmann", "title": "Co-Engineering Manager", "color": "#FFD300", "description": "Job-shares engineering leadership with Alex Kim." } ] },
     { "id": "prod-mgr", "parentId": "cto", "name": "Priya Nair", "title": "Product Manager", "department": "Technology", "color": "#FFD300" },
-    { "id": "it-mgr", "parentId": "cto", "name": "Tom Becker", "title": "IT Manager", "department": "Technology", "color": "#FFD300", "collapsed": true },
+    { "id": "it-mgr", "parentId": "cto", "name": "Tom Becker", "title": "IT Manager", "department": "Technology", "color": "#FFD300", "group": "Support", "collapsed": true },
+    { "id": "tech-admin-mgr", "parentId": "cto", "name": "Marcus Lee", "title": "IT Administration Manager", "department": "Technology", "color": "#FFD300", "group": "Administration" },
 
     { "id": "dev1", "parentId": "eng-mgr", "name": "Chris Wu", "title": "Senior Engineer", "department": "Technology", "color": "#FFD300" },
-    { "id": "dev2", "parentId": "eng-mgr", "name": "Dana Silva", "title": "Engineer", "department": "Technology", "color": "#FFD300" },
-    { "id": "dev3", "parentId": "eng-mgr", "name": "Eva Novak", "title": "Engineer", "department": "Technology", "color": "#FFD300" },
+    { "id": "dev-lead", "parentId": "eng-mgr", "name": "Sara Klein", "title": "Team Lead", "department": "Technology", "color": "#FFD300", "group": "Development" },
+    { "id": "dev2", "parentId": "dev-lead", "name": "Dana Silva", "title": "Engineer", "department": "Technology", "color": "#FFD300" },
+    { "id": "dev3", "parentId": "dev-lead", "name": "Eva Novak", "title": "Engineer", "department": "Technology", "color": "#FFD300" },
 
     { "id": "it1", "parentId": "it-mgr", "name": "Frank Weiss", "title": "IT Support", "department": "Technology", "color": "#FFD300" },
     { "id": "it2", "parentId": "it-mgr", "name": "Grace Chen", "title": "IT Support", "department": "Technology", "color": "#FFD300" },
 
-    { "id": "fin-mgr", "parentId": "cfo", "name": "Hana Suzuki", "title": "Finance Manager", "department": "Finance", "color": "#66C028" },
-    { "id": "acct1", "parentId": "fin-mgr", "name": "Igor Petrov", "title": "Accountant", "department": "Finance", "color": "#66C028" },
+    { "id": "admin1", "parentId": "tech-admin-mgr", "name": "Nina Costa", "title": "Office Coordinator", "department": "Technology", "color": "#FFD300" },
+    { "id": "prod1", "parentId": "prod-mgr", "name": "Liam Kessler", "title": "Associate Product Manager", "department": "Technology", "color": "#FFD300" },
 
-    { "id": "mkt-mgr", "parentId": "cmo", "name": "Julia Fischer", "title": "Marketing Manager", "department": "Marketing", "color": "#EE7623", "description": "Owns brand, campaigns, and content strategy." },
-    { "id": "mkt1", "parentId": "mkt-mgr", "name": "Kevin Brandt", "title": "Content Specialist", "department": "Marketing", "color": "#EE7623" }
+    { "id": "fin-mgr", "parentId": "cfo", "name": "Hana Suzuki", "title": "Finance Manager", "department": "Finance", "color": "#66C028", "group": "Accounting" },
+    { "id": "acct1", "parentId": "fin-mgr", "name": "Igor Petrov", "title": "Accountant", "department": "Finance", "color": "#66C028" },
+    { "id": "fin-payroll-mgr", "parentId": "cfo", "name": "Oliver Brandt", "title": "Payroll Manager", "department": "Finance", "color": "#66C028", "group": "Payroll" },
+    { "id": "payroll1", "parentId": "fin-payroll-mgr", "name": "Sophie Bauer", "title": "Payroll Specialist", "department": "Finance", "color": "#66C028" },
+
+    { "id": "mkt-mgr", "parentId": "cmo", "name": "Julia Fischer", "title": "Marketing Manager", "department": "Marketing", "color": "#EE7623", "group": "Content", "description": "Owns brand, campaigns, and content strategy." },
+    { "id": "mkt1", "parentId": "mkt-mgr", "name": "Kevin Brandt", "title": "Content Specialist", "department": "Marketing", "color": "#EE7623" },
+    { "id": "mkt-campaigns-mgr", "parentId": "cmo", "name": "Robert Adams", "title": "Campaigns Manager", "department": "Marketing", "color": "#EE7623", "group": "Campaigns" },
+    { "id": "campaigns1", "parentId": "mkt-campaigns-mgr", "name": "Ana Rossi", "title": "Campaign Coordinator", "department": "Marketing", "color": "#EE7623" }
   ]
 }

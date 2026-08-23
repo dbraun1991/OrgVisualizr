@@ -69,6 +69,18 @@ export function sanitizeFilename(name, fallback = 'orgvisualizr-chart') {
 }
 
 /**
+ * Truncates a string to `max` characters, appending an ellipsis if it was cut.
+ *
+ * @param {string} str - The string to truncate.
+ * @param {number} max - Maximum length before truncation (ellipsis included).
+ * @returns {string} The (possibly truncated) string.
+ */
+export function truncateText(str, max) {
+    if (!str) return '';
+    return str.length > max ? str.slice(0, max - 1) + '…' : str;
+}
+
+/**
  * Derives up to two initials from a person's display name, for use in the avatar circle.
  *
  * @param {string} name - The full display name.

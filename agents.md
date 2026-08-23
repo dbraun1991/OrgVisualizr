@@ -6,7 +6,7 @@ A small, client-side web app for visualizing organizational charts. A chart is a
 
 ## Core Idea
 
-Everything runs in the browser. No backend, no build step, no database (ADR-001). `DataModel` validates/normalizes the chart JSON, `LayoutEngine` turns it into pixel coordinates via `d3.stratify()`/`d3.tree()`, and `ChartRenderer` draws the result as SVG. Alpine.js drives all UI state — the dual editor, modals, theme, view toggles. Persistence is `localStorage` plus JSON/SVG/PNG/PDF/Text export (ADR-003) — no server involved at any point.
+Everything runs in the browser. No backend, no build step, no database (ADR-001). `DataModel` validates/normalizes the chart JSON, and the result feeds one of two views, toggled in the header: the **Tree view** (`LayoutEngine` + `ChartRenderer`, the org chart itself, via `d3.stratify()`/`d3.tree()`) or the **Sections view** (`SectionsLayout` + `sections-renderer.js`, a more abstract department/group-of-leads view — ADR-006). Alpine.js drives all UI state — the dual editor, modals, theme, view toggles. Persistence is `localStorage` plus JSON/SVG/PNG/PDF/Text export (ADR-003) — no server involved at any point.
 
 ## Architecture
 
@@ -18,8 +18,11 @@ Browser
   └── Vanilla JS modules (js/)
         └── js/app.js  — Alpine root state, i18n init, module wiring, renderChart() orchestration
               ├── js/data-model.js     — validate/normalize chart JSON
-              ├── js/layout-engine.js  — normalized data -> {x,y} coordinates
-              ├── js/chart-renderer.js — {x,y} -> SVG (cards, connectors, badges, tooltips, pan/zoom)
+              ├── js/layout-engine.js  — normalized data -> {x,y} coordinates (Tree view)
+              ├── js/chart-renderer.js — {x,y} -> SVG (cards, connectors, badges, tooltips, pan/zoom);
+              │                          also owns renderSections(), delegating to sections-renderer.js
+              ├── js/sections-layout.js   — normalized data -> section/group/lead-row boxes (Sections view, ADR-006)
+              ├── js/sections-renderer.js — section/group boxes -> SVG (ADR-006)
               ├── js/editor-actions.js — Visual-editor tree mutations
               ├── js/file-manager.js   — localStorage save/load/delete, export, remote import
               ├── js/text-export.js    — Markdown/text nested-list export
@@ -41,14 +44,16 @@ No server. No build step. No database.
 | `js/app.js` | Alpine root state, i18n init, module wiring, `renderChart()`/`updateFromJson()` orchestration, theme toggle |
 | `js/data-model.js` | Validates/normalizes chart JSON — root/id/parentId/cycle checks, `coOccupants`/`placement` rules (ADR-004) |
 | `js/layout-engine.js` | `data -> {x,y}` via `d3.stratify()`/`d3.tree()`; co-occupant cluster widths, staff positioning, `hideLeaves` pruning (ADR-004, ADR-005) |
-| `js/chart-renderer.js` | `{x,y} -> SVG` — occupant cards, elbow/staff connectors, "+N" badges, tooltips, pan/zoom |
+| `js/chart-renderer.js` | Tree view: `{x,y} -> SVG` — occupant cards, elbow/staff connectors, "+N" badges, tooltips, pan/zoom. Also `renderSections()`, the Sections view's container/svgElement/zoom owner (ADR-006) |
+| `js/sections-layout.js` | Sections view: normalized data -> section/group/lead-row box positions, leads-only, tier-indented (ADR-006) |
+| `js/sections-renderer.js` | Sections view: box layout -> SVG (section/group rects+titles, one text row per lead) (ADR-006) |
 | `js/editor-actions.js` | Visual editor mutations — add/remove nodes and co-occupants, reparent, collapse, delete guardrail (ADR-005), recolor subtree |
-| `js/file-manager.js` | `localStorage` save/load/delete, JSON/SVG/PNG/PDF export, remote JSON import |
+| `js/file-manager.js` | `localStorage` save/load/delete, JSON/SVG/PNG/PDF export (both views), remote JSON import |
 | `js/text-export.js` | Markdown/text nested-list export |
 | `js/url-state.js` | URL parameter sync (editor visibility, saved file, remote source) |
 | `js/dialog.js` | Promise-based alert/confirm/prompt modal system (used instead of native `confirm()`/`alert()`) |
 | `js/color-utils.js` | Department color palette, `getContrastTextColor()`, palette dropdown positioning |
-| `js/utils.js` | Shared helpers — HTML/SVG escaping & sanitizing, filename sanitizing, blob downloads |
+| `js/utils.js` | Shared helpers — HTML/SVG escaping & sanitizing, text truncation, filename sanitizing, blob downloads |
 | `data/example.json` | Default chart loaded on first run — also the reference example exercising every DSL feature at once |
 | `locales/en/`, `locales/de/` | `translation.json` — i18next strings |
 | `docs/dsl.md` | Full DSL / data-model reference, with examples |
@@ -82,6 +87,10 @@ To add a language:
 - "Hide leaves" and "Manage" (`hideLeaves`/`manageMode` in `app.js`) are pure client-side view state — never written into `data.nodes`, never present in exported/shared JSON. Two viewers of the same chart JSON can have either switch on or off independently.
 - Saved charts are deleted via the header's "Files" modal (`manageFilesModalOpen`), not the quick-switch `<select>`, which has no delete affordance.
 
+## Sections View (ADR-006)
+
+A second, more abstract view (header toggle, `viewMode` in `app.js`) that steps back from individuals toward organizational shape: one box per `department` ("section"), containing named sub-group boxes for the optional `group` field, listing only *leads* (nodes with at least one direct report — the same rule `hideLeaves` uses) sorted and indented by tier (tree depth). A lead with no `group` renders directly under its section instead of in a group box. Rendered as a single text row per lead (color dot + name/title) — deliberately no card/avatar, unlike the Tree view. `group` has zero effect on the Tree view or on validation; it's purely additive.
+
 ## Architecture Decisions
 
 | ADR | Decision |
@@ -91,6 +100,7 @@ To add a language:
 | [ADR-003](docs/adrs/ADR-003-persistence-and-sharing.md) | `localStorage` + JSON/SVG/PNG/PDF export, no backend (share links removed, see ADR update) |
 | [ADR-004](docs/adrs/ADR-004-co-occupancy-and-staff-placement.md) | Co-leadership (`coOccupants`) and staff placement (`placement`) as attributes on the strict tree, not new edge types |
 | [ADR-005](docs/adrs/ADR-005-editor-guardrails-and-view-controls.md) | Delete only when childless; "Hide leaves"/"Manage" as view-only state, not data; saved charts deletable via the Files modal |
+| [ADR-006](docs/adrs/ADR-006-sections-view.md) | Sections view: department/group-of-leads abstraction, driven by a new optional `group` field, leads-only, tier-indented |
 
 ## What It Does NOT Do
 

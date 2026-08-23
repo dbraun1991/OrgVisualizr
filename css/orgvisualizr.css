@@ -247,6 +247,45 @@ main {
 .org-card-badge { pointer-events: none; }
 .org-card-badge-text { font-size: 10px; font-weight: 700; pointer-events: none; }
 
+/* Sections view: the abstracted department/group view (see docs/adrs, "Sections
+   view"). Deliberately no card/avatar per lead — a single text row — since this
+   view exists to abstract away from individuals, not to show them in detail. */
+.section-rect {
+    fill: var(--card-bg);
+    stroke: var(--border-color);
+    stroke-width: 1px;
+}
+.section-title {
+    fill: var(--text-strong);
+    font-size: 14px;
+    font-weight: 700;
+    pointer-events: none;
+}
+.group-rect {
+    fill: none;
+    stroke: var(--card-stroke);
+    stroke-width: 1px;
+    stroke-dasharray: 3 3;
+}
+.group-title {
+    fill: var(--dept-text);
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    pointer-events: none;
+}
+.lead-dot { pointer-events: none; }
+.lead-name {
+    fill: var(--text-strong);
+    font-size: 12px;
+    font-weight: 600;
+}
+.lead-title {
+    fill: var(--text-muted);
+    font-size: 11px;
+}
+
 /* Tooltip: deliberately always dark, regardless of theme, for reliable contrast
    against either a light or dark page — so none of these are theme variables. */
 .tooltip {

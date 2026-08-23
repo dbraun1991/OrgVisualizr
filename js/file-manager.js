@@ -318,6 +318,22 @@ export const fileManagerActions = {
             el.setAttribute('stroke-dasharray', '5 4');
         });
 
+        // Sections view (see sections-renderer.js) — same reasoning as the org-card/
+        // org-link block above, just a different set of classes.
+        clone.querySelectorAll('.section-rect').forEach((el) => {
+            el.setAttribute('fill', v('--card-bg'));
+            el.setAttribute('stroke', v('--border-color'));
+        });
+        clone.querySelectorAll('.section-title').forEach((el) => el.setAttribute('fill', v('--text-strong')));
+        clone.querySelectorAll('.group-rect').forEach((el) => {
+            el.setAttribute('fill', 'none');
+            el.setAttribute('stroke', v('--card-stroke'));
+            el.setAttribute('stroke-dasharray', '3 3');
+        });
+        clone.querySelectorAll('.group-title').forEach((el) => el.setAttribute('fill', v('--dept-text')));
+        clone.querySelectorAll('.lead-name').forEach((el) => el.setAttribute('fill', v('--text-strong')));
+        clone.querySelectorAll('.lead-title').forEach((el) => el.setAttribute('fill', v('--text-muted')));
+
         return clone;
     },
 
