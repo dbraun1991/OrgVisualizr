@@ -205,7 +205,8 @@ export class ChartRenderer {
             .attr('class', 'org-card-badge')
             .attr('cx', (d) => this._clusterWidth(d.data, config) - 14)
             .attr('cy', 14)
-            .attr('r', 12);
+            .attr('r', 12)
+            .attr('fill', (d) => d.data.color || '#4B5563');
         badges.append('text')
             .attr('class', 'org-card-badge-text')
             .attr('x', (d) => this._clusterWidth(d.data, config) - 14)

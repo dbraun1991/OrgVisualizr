@@ -241,9 +241,11 @@ main {
     text-transform: uppercase;
     pointer-events: none;
 }
-.org-card-badge { fill: var(--accent); }
-/* Badge text sits on the accent circle, not the card — stays literal white like the
-   avatar initials above. */
+/* Fill is set inline in chart-renderer.js (matches the node's own color, same as the
+   accent bar and avatar) rather than here, so a CSS rule can't out-specificity it. */
+.org-card-badge { pointer-events: none; }
+/* Badge text sits on the badge circle (a node-color fill, not the page background), so
+   it stays literal white like the avatar initials above, regardless of theme. */
 .org-card-badge-text { fill: #fff; font-size: 10px; font-weight: 700; pointer-events: none; }
 
 /* Tooltip: deliberately always dark, regardless of theme, for reliable contrast
