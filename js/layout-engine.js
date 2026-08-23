@@ -11,6 +11,10 @@
  * - `placement: "staff"` nodes are excluded from the d3.tree() pass entirely
  *   and positioned beside their parent in a separate post-process step.
  *
+ * `hideLeaves` (see ADR-005) globally hides any node with no reports of its
+ * own, crediting the hidden count to that node's direct manager — reusing
+ * the exact same "+N" badge mechanism `collapsed` already produces.
+ *
  * Staff placement geometry (see ADR-004 addendum): a staff card sits at
  * *exactly* its parent's row (same y), never dipping into the gap band below
  * the parent where that parent's own child-fanout connector runs — so a
@@ -47,10 +51,17 @@ export class LayoutEngine {
 
     /**
      * @param {Object} data - Normalized data from DataModel (meta + nodes[]).
+     * @param {Object} [options] - Layout options.
+     * @param {boolean} [options.hideLeaves] - If true, nodes with no reports of their
+     *   own (leaves — see ADR-005) are hidden globally, and each direct manager of one
+     *   or more hidden leaves gets a "+N" badge for them, reusing the same badge the
+     *   per-node `collapsed` flag already produces. Staff-placement nodes are never
+     *   affected — they're a distinct visual category positioned outside this pass.
      * @returns {Object} Layout containing the d3 hierarchy root, staff nodes, and config.
      */
-    calculate(data) {
+    calculate(data, options = {}) {
         const { cardHeight, gapX, gapY, staffGapX, staffInternalGap, margins } = this.config;
+        const hideLeaves = !!options.hideLeaves;
 
         const byId = new Map(data.nodes.map((n) => [n.id, n]));
         const childrenOf = new Map();
@@ -60,11 +71,18 @@ export class LayoutEngine {
                 childrenOf.get(n.parentId).push(n.id);
             }
         });
+        const isLeaf = (id) => !childrenOf.has(id) || childrenOf.get(id).length === 0;
 
-        // Prune descendants of collapsed nodes, tracking how many were hidden.
+        // Prune descendants of collapsed nodes, tracking how many were hidden. Leaf
+        // children are additionally pruned (into the same per-parent count) when the
+        // global "hide leaves" toggle is on.
         const hiddenDescendantCount = new Map();
         const visibleIds = new Set();
         const rootNode = data.nodes.find((n) => n.parentId === null);
+
+        const addHidden = (parentId, n) => {
+            hiddenDescendantCount.set(parentId, (hiddenDescendantCount.get(parentId) || 0) + n);
+        };
 
         const walk = (id) => {
             visibleIds.add(id);
@@ -78,10 +96,17 @@ export class LayoutEngine {
                     });
                 };
                 countAll(id);
-                hiddenDescendantCount.set(id, count);
+                addHidden(id, count);
                 return;
             }
-            (childrenOf.get(id) || []).forEach(walk);
+            (childrenOf.get(id) || []).forEach((childId) => {
+                const childNode = byId.get(childId);
+                if (hideLeaves && childNode.placement !== 'staff' && isLeaf(childId)) {
+                    addHidden(id, 1);
+                    return;
+                }
+                walk(childId);
+            });
         };
         walk(rootNode.id);
 

@@ -60,6 +60,10 @@
                             <option :value="name" x-text="name"></option>
                         </template>
                     </select>
+                    <button @click.stop="manageFilesModalOpen = true" :title="$store.i18n.t('header.filesTitle')">
+                        <svg viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+                        <span x-text="$store.i18n.t('header.files')">Files</span>
+                    </button>
 
                     <span class="header-divider desktop-only"></span>
 
@@ -162,6 +166,27 @@
         </div>
     </div>
 
+    <div class="app-modal-backdrop" x-show="manageFilesModalOpen" x-cloak @click.self="manageFilesModalOpen = false">
+        <div class="app-modal" role="dialog" aria-labelledby="manage-files-modal-title" @click.stop>
+            <div class="app-modal-header">
+                <h2 id="manage-files-modal-title" x-text="$store.i18n.t('manageModal.title')">Saved Charts</h2>
+                <button type="button" class="app-modal-close" @click="manageFilesModalOpen = false" :aria-label="$store.i18n.t('dialog.close')">&times;</button>
+            </div>
+            <p class="app-modal-message" x-show="savedFiles.length === 0" x-text="$store.i18n.t('manageModal.empty')">No saved charts yet.</p>
+            <ul class="saved-files-list">
+                <template x-for="name in savedFiles" :key="name">
+                    <li class="saved-files-row" :class="{ 'saved-files-row--active': name === currentFileName }">
+                        <button type="button" class="saved-files-name" @click="loadFile(name); manageFilesModalOpen = false" x-text="name"></button>
+                        <button type="button" class="btn-icon btn-danger" @click="deleteFile(name)" :title="$store.i18n.t('manageModal.delete')">✕</button>
+                    </li>
+                </template>
+            </ul>
+            <div class="app-modal-actions">
+                <button type="button" @click="manageFilesModalOpen = false" x-text="$store.i18n.t('dialog.close')">Close</button>
+            </div>
+        </div>
+    </div>
+
     <main>
         <div id="editor-container" x-show="editorVisible">
             <div class="editor-tabs">
@@ -197,7 +222,7 @@
                 <div class="editor-section-container">
                     <div class="section-header-top">
                         <h3 class="editor-section-title" x-text="$store.i18n.t('editor.nodesTitle')">People / Roles</h3>
-                        <button class="btn-small" @click="addRootNode()" x-show="!getRootNode()" x-text="$store.i18n.t('editor.addRoot')">+ Root</button>
+                        <button class="btn-small" @click="addRootNode()" x-show="manageMode && !getRootNode()" x-text="$store.i18n.t('editor.addRoot')">+ Root</button>
                     </div>
                     <div class="editor-section">
                         <template x-for="entry in flatNodeList()" :key="getObjKey(entry.node)">
@@ -207,8 +232,8 @@
                                     <strong x-text="entry.node.name || $store.i18n.t('editor.newNode')" class="node-title"></strong>
                                     <span class="node-title-role" x-show="entry.node.title" x-text="'— ' + entry.node.title"></span>
                                     <div class="node-actions">
-                                        <button class="btn-icon btn-icon-sm" @click.stop="addChildNode(entry.node)" :title="$store.i18n.t('editor.addChild')">+</button>
-                                        <button class="btn-icon btn-danger btn-icon-xs" @click.stop="removeNode(entry.node)" x-show="entry.node.parentId" :title="$store.i18n.t('editor.delete')">✕</button>
+                                        <button class="btn-icon btn-icon-sm" @click.stop="addChildNode(entry.node)" x-show="manageMode" :title="$store.i18n.t('editor.addChild')">+</button>
+                                        <button class="btn-icon btn-danger btn-icon-xs" @click.stop="removeNode(entry.node)" x-show="manageMode && entry.node.parentId" :title="$store.i18n.t('editor.delete')">✕</button>
                                         <span x-text="collapsed ? '▼' : '▲'" class="collapse-icon"></span>
                                     </div>
                                 </div>
@@ -274,7 +299,7 @@
                                     <div class="co-occupants-section">
                                         <div class="section-header-top">
                                             <h4 x-text="$store.i18n.t('editor.coOccupantsTitle')">Co-Leads</h4>
-                                            <button class="btn-small" @click="addCoOccupant(entry.node)" x-text="$store.i18n.t('editor.addCoOccupant')">+ Co-Lead</button>
+                                            <button class="btn-small" @click="addCoOccupant(entry.node)" x-show="manageMode" x-text="$store.i18n.t('editor.addCoOccupant')">+ Co-Lead</button>
                                         </div>
                                         <template x-for="(co, coIdx) in (entry.node.coOccupants || [])" :key="coIdx">
                                             <div class="card co-occupant-card">
@@ -298,7 +323,7 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="form-group" style="flex: none;">
+                                                    <div class="form-group" style="flex: none;" x-show="manageMode">
                                                         <label>&nbsp;</label>
                                                         <button class="btn-icon btn-danger" @click="removeCoOccupant(entry.node, coIdx)" :title="$store.i18n.t('editor.delete')">✕</button>
                                                     </div>
@@ -321,6 +346,29 @@
                     </div>
                 </div>
 
+            </div>
+
+            <div class="editor-sidebar-footer">
+                <div class="editor-sidebar-footer-row">
+                    <span>
+                        <span class="editor-sidebar-footer-label" x-text="$store.i18n.t('editor.hideLeaves')">Hide leaves</span>
+                        <span class="editor-sidebar-footer-hint" x-text="$store.i18n.t('editor.hideLeavesHint')">People with no reports of their own</span>
+                    </span>
+                    <label class="switch">
+                        <input type="checkbox" x-model="hideLeaves">
+                        <span class="switch-slider"></span>
+                    </label>
+                </div>
+                <div class="editor-sidebar-footer-row">
+                    <span>
+                        <span class="editor-sidebar-footer-label" x-text="$store.i18n.t('editor.manageMode')">Manage</span>
+                        <span class="editor-sidebar-footer-hint" x-text="$store.i18n.t('editor.manageModeHint')">Show add/delete controls on entries</span>
+                    </span>
+                    <label class="switch">
+                        <input type="checkbox" x-model="manageMode">
+                        <span class="switch-slider"></span>
+                    </label>
+                </div>
             </div>
         </div>
         <div id="orgvisualizr-container"></div>

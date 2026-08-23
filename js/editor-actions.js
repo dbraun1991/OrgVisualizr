@@ -221,9 +221,11 @@ export const editorActions = {
      * Removes a node from the tree.
      *
      * The root node cannot be deleted (a tree always needs exactly one root).
-     * If the node has children, they are reparented to the deleted node's
-     * own parent (its grandparent from the children's perspective) after
-     * user confirmation, so the rest of the tree stays connected.
+     * A node with any direct or indirect reports cannot be deleted either —
+     * move or delete its reports first (see ADR-005). This replaces an earlier
+     * behavior that reparented a deleted node's reports up to its own manager;
+     * that made it too easy to accidentally restructure a much larger part of
+     * the tree than intended from a single delete click.
      *
      * @param {Object} node - The node to remove.
      */
@@ -233,15 +235,13 @@ export const editorActions = {
             return;
         }
 
-        const children = this.getChildren(node.id);
-        if (children.length > 0) {
-            const ok = await this.dialogConfirm(
-                i18next.t('js.confirmReparentOnDelete', { count: children.length }),
-                i18next.t('js.confirmTitle')
-            );
-            if (!ok) return;
-            children.forEach((c) => { c.parentId = node.parentId; });
+        if (this.getChildren(node.id).length > 0) {
+            await this.dialogAlert(i18next.t('js.cannotDeleteWithReports'), i18next.t('js.errorTitle'));
+            return;
         }
+
+        const ok = await this.dialogConfirm(i18next.t('js.confirmDeleteNode', { name: node.name || node.id }), i18next.t('js.confirmTitle'));
+        if (!ok) return;
 
         const index = this.data.nodes.findIndex((n) => n.id === node.id);
         if (index !== -1) this.data.nodes.splice(index, 1);

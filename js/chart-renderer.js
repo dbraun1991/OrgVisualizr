@@ -130,20 +130,6 @@ export class ChartRenderer {
             .attr('transform', (d) => `translate(${d.x - this._clusterWidth(d.data, config) / 2}, ${d.y - config.cardHeight / 2})`)
             .style('cursor', (d) => (d.canToggle ? 'pointer' : 'default'));
 
-        const badges = nodeGroups.filter((d) => d.hiddenCount > 0);
-        badges.append('circle')
-            .attr('class', 'org-card-badge')
-            .attr('cx', (d) => this._clusterWidth(d.data, config) - 14)
-            .attr('cy', 14)
-            .attr('r', 12);
-        badges.append('text')
-            .attr('class', 'org-card-badge-text')
-            .attr('x', (d) => this._clusterWidth(d.data, config) - 14)
-            .attr('y', 14)
-            .attr('text-anchor', 'middle')
-            .attr('dominant-baseline', 'central')
-            .text((d) => `+${d.hiddenCount}`);
-
         nodeGroups.on('click', (event, d) => {
             if (d.canToggle) {
                 renderer.container.dispatchEvent(new CustomEvent('toggle-node', {
@@ -209,6 +195,24 @@ export class ChartRenderer {
             .attr('x', 60)
             .attr('y', config.cardHeight / 2 + 21)
             .text((o) => this._truncate(o.position.data.department || '', 24));
+
+        // Appended after (not before) the occupant cards above, so the badge paints
+        // on top of them instead of being covered by the last card's opaque rect —
+        // it was previously invisible because SVG paints later siblings over earlier
+        // ones and this used to run before occupantGroups existed.
+        const badges = nodeGroups.filter((d) => d.hiddenCount > 0);
+        badges.append('circle')
+            .attr('class', 'org-card-badge')
+            .attr('cx', (d) => this._clusterWidth(d.data, config) - 14)
+            .attr('cy', 14)
+            .attr('r', 12);
+        badges.append('text')
+            .attr('class', 'org-card-badge-text')
+            .attr('x', (d) => this._clusterWidth(d.data, config) - 14)
+            .attr('y', 14)
+            .attr('text-anchor', 'middle')
+            .attr('dominant-baseline', 'central')
+            .text((d) => `+${d.hiddenCount}`);
 
         occupantGroups
             .on('mouseenter', function (event, o) {

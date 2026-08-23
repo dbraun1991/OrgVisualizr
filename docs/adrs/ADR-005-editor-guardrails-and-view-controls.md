@@ -1,0 +1,48 @@
+# ADR-005: Editor Guardrails and View Controls
+
+## Status
+Accepted — 2026-08-23
+
+## Context
+
+Three related but distinct changes landed together in response to real usage feedback:
+
+1. **Delete behavior.** The original `removeNode` (see the original editor-actions.js implementation) let you delete a node that still had direct reports — its reports were silently reparented to the deleted node's own manager, after a confirm dialog. In practice this made it too easy to restructure a much larger part of the tree than intended from a single delete click: deleting one mid-level manager could quietly reassign an entire subtree several levels deep to someone else, with the only warning being a generic "N reports will be reassigned" message that doesn't show *which* N people, or how deep the subtree actually goes.
+2. **Decluttering large charts.** A real org chart can have many individual-contributor leaves at the bottom of every branch. There was no way to see the *shape* of the management structure without also seeing every leaf.
+3. **No way to delete a saved chart.** `localStorage`-saved charts could be created (Save/Copy) and loaded, but never removed from the saved-files list — the file list could only grow.
+
+bpmn-process-creator's file-management sidebar (Recent/List views, per-file rename/delete buttons, a plain `confirm()` before delete) was reviewed as a reference for both the saved-charts UI and the general shape of an in-app "toggle a view/behavior, act on a list" control, since OrgVisualizr didn't have prior art for either. Its actual delete flow (`deleteProcess` in bpmn-process-creator's `public/app.js`) is: stop the row's own click-to-load handler from also firing, confirm, delete, refresh the list. Its toggle-switch is a standard hidden-checkbox-plus-sliding-pill control gating visibility of destructive buttons behind an explicit "edit mode."
+
+## Decision
+
+**1. A node can only be deleted once it has no reports at all**, direct or indirect (`editor-actions.js` `removeNode`). No more reparent-on-delete. If it has reports, the action is blocked with a message telling the user to move or delete them first, rather than silently restructuring the tree on their behalf. A plain confirm ("Delete X? This can't be undone.") was added even for the now-simpler childless case, matching bpmn-process-creator's own always-confirm delete pattern — previously a childless node deleted with *zero* confirmation.
+
+This is a deliberate loss of convenience (reparent-on-delete was faster for pruning a manager out of the middle of the tree) traded for predictability: a delete now only ever removes exactly the one node you clicked, never anyone else, and you can always tell in advance whether a delete button will work (`removeNode` reports up front rather than after the fact).
+
+**2. "Hide leaves" is a view-only toggle, not a data field.** Unlike `collapsed` (which is per-node, persisted in the JSON, and explicitly authored), `hideLeaves` is a single boolean in Alpine app state — like `activeTab` or `theme` below, not part of the chart's data model. It never touches `node.collapsed` or gets written into the JSON. `layout-engine.js`'s `calculate()` takes it as an `options` parameter and, when on, prunes any node with no reports of its own (a "leaf" — see the method's own doc comment for the exact definition) from the tree pass, crediting the hidden count to that leaf's direct manager. This reuses the *exact same* "+N" badge mechanism `collapsed` already produces — from the renderer's perspective there's only one reason a node shows a badge, whether that's an explicit per-node collapse or the global leaves toggle. Staff-placement nodes are excluded from being hidden this way; they're a separate visual category (ADR-004) that doesn't participate in the main tree-depth pass at all.
+
+Kept as pure client-side view state (not persisted to `localStorage` or the URL, unlike `editorVisible`) because it's a temporary "declutter while I look at the shape of things" aid, not a saved property of the chart — the same chart JSON should look the same whether or not the person currently viewing it happens to have leaves hidden.
+
+**3. Saved charts can now be deleted**, via a new "Manage" modal (`manageFilesModalOpen`) listing every saved chart with a load button and a delete button per row — `file-manager.js` `deleteFile()`. Deleting a saved chart clears only the "loaded from" association (`currentFileName`) if it was the currently-open one; it does **not** clear the chart currently on screen, since removing the *saved copy* shouldn't also destroy unsaved in-progress edits. This is a deliberate divergence from bpmn-process-creator's `deleteProcess`, which does clear the open diagram if it was the deleted file — that makes sense for BPMN's server-backed multi-file-on-disk model, but OrgVisualizr's saved charts are just named `localStorage` snapshots of client-only state, and there's no reason a "delete the backup" action should also discard what's currently being edited.
+
+A modal was chosen over adopting bpmn-process-creator's permanent file-list sidebar because OrgVisualizr's sidebar is already the data editor (Visual/JSON tabs) — a second permanent panel would compete with it for the same screen real estate for a much smaller number of saved items than BPMN's server-backed multi-user file store typically holds.
+
+**4. The toggle-switch visual pattern** (hidden checkbox + `.switch-slider` sliding pill, `css/orgvisualizr.css`) was ported from bpmn-process-creator's edit-mode toggle, restyled with this app's own color tokens (ADR unrelated to theming, see the light/dark mode work landing alongside this). It's used for "Hide leaves" and is the natural default for any future on/off view control, rather than inventing a new checkbox style each time.
+
+## Consequences
+
+- Pruning a manager out of the middle of the tree now requires reparenting or deleting their reports first, one at a time (or editing the JSON tab directly, which has no such restriction — the guardrail is a visual-editor safety net, not a data-model constraint). This is more clicks for that specific operation than before.
+- `layout-engine.calculate()`'s signature changed from `calculate(data)` to `calculate(data, options)`; all call sites (`app.js` `renderChart`) were updated. Any future layout option should follow the same pattern rather than adding more positional parameters.
+- The saved-charts "Files" modal (renamed from "Manage" — see the update below) duplicates the file list already shown in the header's `<select>` — that `<select>` remains the quick-switch control; the modal is specifically for the delete action the `<select>` can't offer. If this grows further (rename, search, folders — the fuller bpmn-process-creator pattern), it's a strong signal OrgVisualizr's saved-chart storage should move off a flat `localStorage` list onto something more structured, at which point this ADR should be revisited.
+
+## Update — 2026-08-23: the actual node-level "Manage" gate, and a badge visibility bug
+
+Two follow-ups from the first round of feedback on this ADR's changes:
+
+**Badge visibility bug.** The "+N" badge (both the pre-existing per-node `collapsed` one and the new "Hide leaves" one above) was invisible in practice, though present in the DOM. Cause: `chart-renderer.js` appended the badge circle/text to a position's `<g>` group *before* appending the occupant card rects — SVG paints later siblings over earlier ones, so each occupant card's opaque background painted directly over the badge sitting at its top-right corner, completely hiding it. Fixed by moving the badge append to run after the occupant cards are drawn, so it paints on top as intended. This was a pure paint-order bug, not a logic bug — the underlying hidden-count calculation was already correct.
+
+**The actual point 3 of this ADR was wrong — corrected here.** The first pass read "BPMN had an edit mode for adding and deleting... analyze the bpmn-gui" as a request for a saved-*file* manager (point 3 and the "Files" modal above). That modal is still useful and stays, but it wasn't what was being asked for: the real request was bpmn-process-creator's actual edit-mode pattern applied to *node* entries in the sidebar — hide the per-entry add (+) and delete (✕) buttons by default, and only reveal them via an explicit toggle, exactly like bpmn-process-creator hides its rename/delete buttons behind `body.edit-mode`.
+
+This is now implemented as a second switch, **"Manage"**, in the same pinned sidebar footer as "Hide leaves" (`manageMode` in Alpine state, defaulting to `false`). While off, every entry in the visual editor's People/Roles list shows only its fields — no add-child, no add-co-lead, no delete-node, no delete-co-occupant controls, and no "+ Root" button. Turning it on reveals all of them. This is pure UI gating in `index.html` (`x-show="manageMode && ..."` on each button) — it does not touch `editor-actions.js` at all, so the JSON tab and any programmatic use of `addChildNode`/`removeNode`/etc. are completely unaffected; the gate only hides the buttons, it doesn't restrict what the app can do.
+
+Because the header's existing saved-charts button was also labeled "Manage" (point 3 above), it was renamed to **"Files"** (`header.files`/`header.filesTitle`) to keep the two controls — one in the header for saved charts, one in the sidebar footer for node entries — from sharing a name while doing unrelated things. The modal's own title ("Saved Charts" / `manageModal.title`) was already distinct and needed no change.

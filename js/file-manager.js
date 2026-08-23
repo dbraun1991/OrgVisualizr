@@ -25,6 +25,29 @@ export const fileManagerActions = {
     },
 
     /**
+     * Deletes a saved chart from localStorage after confirmation (ADR-005).
+     * If the deleted file was the currently-loaded one, only the "loaded from"
+     * association is cleared — the chart currently on screen is left alone, since
+     * deleting the saved copy shouldn't also wipe out unsaved work in progress.
+     * @param {string} name - The saved chart name to delete.
+     */
+    async deleteFile(name) {
+        const ok = await this.dialogConfirm(i18next.t('js.confirmDeleteFile', { name }), i18next.t('js.confirmTitle'));
+        if (!ok) return;
+
+        try {
+            localStorage.removeItem('orgvisualizr_file_' + name);
+        } catch (e) {
+            console.error('Failed to delete file:', e);
+        }
+        this.savedFiles = this.savedFiles.filter((n) => n !== name);
+        this.saveIndex();
+        if (this.currentFileName === name) {
+            this.currentFileName = '';
+        }
+    },
+
+    /**
      * Loads a specific file by name from localStorage.
      * @param {string} name - The name of the file to load.
      */

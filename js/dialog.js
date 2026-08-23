@@ -10,6 +10,7 @@ export const dialogActions = {
     onEscapeModal() {
         if (this.dialogOpen) this.dialogDismiss();
         else if (this.importModalOpen) this.importModalOpen = false;
+        else if (this.manageFilesModalOpen) this.manageFilesModalOpen = false;
     },
 
     /**

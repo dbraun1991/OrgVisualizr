@@ -31,6 +31,7 @@
     --footer-text: #999999;
     --footer-link: #bbbbbb;
     --modal-backdrop: rgba(0, 0, 0, 0.6);
+    --switch-track-off: #3a3a3a;
     --font-family: Helvetica, "Helvetica Neue", Arial, "Liberation Sans", sans-serif;
 }
 
@@ -61,6 +62,7 @@
     --footer-text: #6b7280;
     --footer-link: #3d4453;
     --modal-backdrop: rgba(15, 18, 24, 0.35);
+    --switch-track-off: #c7ccd4;
 }
 
 * { box-sizing: border-box; }
@@ -492,6 +494,31 @@ main {
 .import-url-row button { background: var(--accent); border: none; color: #fff; padding: 0.4rem 0.8rem; border-radius: 5px; cursor: pointer; }
 .import-cors-help { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.6rem; }
 
+.saved-files-list { list-style: none; margin: 0.4rem 0 0; padding: 0; max-height: 320px; overflow-y: auto; }
+.saved-files-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 0.3rem 0.3rem 0.3rem 0.1rem;
+    margin-bottom: 0.4rem;
+}
+.saved-files-row--active { border-color: var(--accent); }
+.saved-files-name {
+    flex: 1;
+    text-align: left;
+    background: none;
+    border: none;
+    color: var(--text-color);
+    padding: 0.35rem 0.5rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+    border-radius: 5px;
+    font-family: inherit;
+}
+.saved-files-name:hover { background: var(--card-bg-hover); }
+
 /* Footer */
 .site-footer {
     flex-shrink: 0;
@@ -506,6 +533,54 @@ main {
 .site-footer-link { color: var(--footer-link); text-decoration: none; }
 .site-footer-link:hover { color: var(--text-strong); }
 .site-footer-sep { color: var(--border-color); }
+
+/* Bottom-pinned editor sidebar controls (Hide Leaves, Manage) — sits below the
+   scrollable tab content, always visible regardless of scroll position (ADR-005). */
+.editor-sidebar-footer {
+    flex-shrink: 0;
+    border-top: 1px solid var(--border-color);
+    padding: 0.5rem 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+.editor-sidebar-footer-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    padding: 0.15rem 0;
+}
+.editor-sidebar-footer-label { font-size: 0.8rem; color: var(--text-color); }
+.editor-sidebar-footer-hint { font-size: 0.7rem; color: var(--text-muted); display: block; }
+
+/* Toggle switch — same visual mechanics as bpmn-process-creator's edit-mode toggle
+   (hidden checkbox + sliding pill), restyled with this app's tokens. */
+.switch { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
+.switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+.switch-slider {
+    position: absolute;
+    inset: 0;
+    background: var(--switch-track-off);
+    border-radius: 22px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+.switch-slider::before {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    left: 3px;
+    top: 3px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.15s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+.switch input:checked + .switch-slider { background: var(--accent); }
+.switch input:checked + .switch-slider::before { transform: translateX(18px); }
+.switch input:focus-visible + .switch-slider { box-shadow: 0 0 0 3px var(--accent-tint); }
 
 @media (max-width: 720px) {
     header h1 { font-size: 1.05rem; }

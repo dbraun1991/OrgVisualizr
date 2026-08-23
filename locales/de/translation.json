@@ -6,6 +6,8 @@
     "toggleEditor": "Editor umschalten",
     "edit": "Bearbeiten",
     "unsaved": "-- Ungespeichert --",
+    "filesTitle": "Gespeicherte Organigramme verwalten",
+    "files": "Dateien",
     "saveTitle": "Speichern",
     "save": "Speichern",
     "copyTitle": "Kopieren als...",
@@ -38,6 +40,11 @@
     "load": "Laden",
     "corsHelpHtml": "Ihr Browser erlaubt OrgVisualizr nur dann, JSON von einer anderen Seite zu laden, wenn dieser Server passende <strong>CORS</strong>-Header sendet (z. B. <code class=\"text-ccc\">Access-Control-Allow-Origin</code>), die den Ursprung dieser App einschließen. Von Ihnen kontrolliertes Hosting (z. B. GitHub Pages, Rohdateien auf derselben Domain, Objektspeicher mit CORS-Regeln) funktioniert in der Regel; viele generische „Paste“- oder Datei-Hoster blockieren Cross-Origin-Anfragen, sodass das Laden mit einem Netzwerkfehler fehlschlagen kann. Laden Sie in diesem Fall die Datei herunter und nutzen Sie die Dropzone oben, oder hosten Sie das JSON dort, wo Sie CORS setzen können."
   },
+  "manageModal": {
+    "title": "Gespeicherte Organigramme",
+    "empty": "Noch keine gespeicherten Organigramme.",
+    "delete": "Dieses gespeicherte Organigramm löschen"
+  },
   "editor": {
     "tabVisual": "Visueller Editor",
     "tabJson": "JSON",
@@ -63,6 +70,10 @@
     "coOccupantsTitle": "Co-Leitung",
     "addCoOccupant": "+ Co-Leitung",
     "collapseInChart": "Teilbaum im Diagramm einklappen",
+    "hideLeaves": "Blätter ausblenden",
+    "hideLeavesHint": "Personen ohne eigene Unterstellte",
+    "manageMode": "Verwalten",
+    "manageModeHint": "Hinzufügen/Löschen-Steuerelemente an Einträgen anzeigen",
     "descHide": "Beschreibung ausblenden",
     "descEdit": "Beschreibung bearbeiten",
     "descAdd": "+ Beschreibung hinzufügen",
@@ -84,8 +95,9 @@
     "overwriteTitle": "Überschreiben?",
     "cannotDeleteRoot": "Der Wurzelknoten kann nicht gelöscht werden — ein Organigramm braucht immer genau eine Wurzel. Ordnen Sie zuerst alle Personen einer anderen Wurzel unter, falls Sie diese ersetzen möchten.",
     "staffNeedsNoChildren": "Stabsstellen können in v1 keine eigenen direkt unterstellten Personen haben — verschieben oder entfernen Sie zuerst deren Unterstellte, oder belassen Sie den Knoten als Linien-Position.",
-    "confirmReparentOnDelete_one": "Dieser Knoten hat {{count}} direkt unterstellte Person. Diese wird der Führungskraft dieses Knotens unterstellt. Trotzdem löschen?",
-    "confirmReparentOnDelete_other": "Dieser Knoten hat {{count}} direkt unterstellte Personen. Diese werden der Führungskraft dieses Knotens unterstellt. Trotzdem löschen?",
+    "cannotDeleteWithReports": "Diesem Knoten sind noch direkt oder indirekt Personen unterstellt — ordnen Sie diese zuerst um oder löschen Sie sie zuerst. Ein Knoten kann erst gelöscht werden, wenn ihm niemand mehr unterstellt ist.",
+    "confirmDeleteNode": "\"{{name}}\" löschen? Dies kann nicht rückgängig gemacht werden.",
+    "confirmDeleteFile": "Das gespeicherte Organigramm \"{{name}}\" löschen? Dies kann nicht rückgängig gemacht werden.",
     "remoteLoadFailedPrefix": "Laden fehlgeschlagen: URL muss mit http:// oder https:// beginnen.",
     "remoteLoadFailedTooLong": "Laden fehlgeschlagen: URL ist zu lang.",
     "remoteLoadFailedHttp": "Laden fehlgeschlagen (HTTP {{status}}).",

@@ -6,6 +6,8 @@
     "toggleEditor": "Toggle Editor",
     "edit": "Edit",
     "unsaved": "-- Unsaved --",
+    "filesTitle": "Manage saved charts",
+    "files": "Files",
     "saveTitle": "Save",
     "save": "Save",
     "copyTitle": "Copy as...",
@@ -38,6 +40,11 @@
     "load": "Load",
     "corsHelpHtml": "Your browser will only allow OrgVisualizr to read JSON from another site if that server sends appropriate <strong>CORS</strong> headers (for example <code class=\"text-ccc\">Access-Control-Allow-Origin</code>) that include this app’s origin. Hosting you control (e.g. GitHub Pages, raw files on the same domain, object storage with CORS rules) can work; many generic “paste” or file hosts block cross-origin requests, so the load may fail with a network error. If that happens, download the file and use the dropzone above, or host the JSON where you can set CORS."
   },
+  "manageModal": {
+    "title": "Saved Charts",
+    "empty": "No saved charts yet.",
+    "delete": "Delete this saved chart"
+  },
   "editor": {
     "tabVisual": "Visual Editor",
     "tabJson": "JSON",
@@ -63,6 +70,10 @@
     "coOccupantsTitle": "Co-Leads",
     "addCoOccupant": "+ Co-Lead",
     "collapseInChart": "Collapse subtree in chart",
+    "hideLeaves": "Hide leaves",
+    "hideLeavesHint": "People with no reports of their own",
+    "manageMode": "Manage",
+    "manageModeHint": "Show add/delete controls on entries",
     "descHide": "Hide description",
     "descEdit": "Edit description",
     "descAdd": "+ Add description",
@@ -84,8 +95,9 @@
     "overwriteTitle": "Overwrite?",
     "cannotDeleteRoot": "The root node can't be deleted — an org chart always needs exactly one root. Reparent everyone under a different root first if you need to replace it.",
     "staffNeedsNoChildren": "Staff positions can't have direct reports of their own in v1 — move or remove its children first, or leave it as a Line position.",
-    "confirmReparentOnDelete_one": "This node has {{count}} direct report. They will be reassigned to report to this node's own manager. Delete anyway?",
-    "confirmReparentOnDelete_other": "This node has {{count}} direct reports. They will be reassigned to report to this node's own manager. Delete anyway?",
+    "cannotDeleteWithReports": "This node still has direct (or indirect) reports — reparent or delete them first. A node can only be deleted once nothing reports to it anymore.",
+    "confirmDeleteNode": "Delete \"{{name}}\"? This can't be undone.",
+    "confirmDeleteFile": "Delete the saved chart \"{{name}}\"? This can't be undone.",
     "remoteLoadFailedPrefix": "Remote load failed: URL must start with http:// or https://.",
     "remoteLoadFailedTooLong": "Remote load failed: URL is too long.",
     "remoteLoadFailedHttp": "Remote load failed (HTTP {{status}}).",

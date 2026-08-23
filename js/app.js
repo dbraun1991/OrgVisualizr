@@ -72,6 +72,8 @@ class App {
                 editorVisible: false,
                 activeTab: 'visual',
                 theme: 'dark',
+                hideLeaves: false,
+                manageMode: false,
                 rawJson: '',
                 jsonError: '',
                 savedFiles: [],
@@ -79,6 +81,7 @@ class App {
                 importModalOpen: false,
                 importUrl: '',
                 importDropActive: false,
+                manageFilesModalOpen: false,
                 dialogOpen: false,
                 dialogMode: 'alert',
                 dialogTitle: '',
@@ -143,6 +146,7 @@ class App {
 
                     this.$watch('editorVisible', () => this.updateUrlParams());
                     this.$watch('currentFileName', () => this.updateUrlParams());
+                    this.$watch('hideLeaves', () => this.renderChart(this.data));
 
                     // Keep the raw JSON string and chart in sync whenever the visual editor
                     // mutates the underlying data object.
@@ -231,7 +235,7 @@ class App {
                     try {
                         const clone = JSON.parse(JSON.stringify(jsonData));
                         const normalizedData = window.app.dataModel.validateAndNormalize(clone);
-                        const layout = window.app.layoutEngine.calculate(normalizedData);
+                        const layout = window.app.layoutEngine.calculate(normalizedData, { hideLeaves: this.hideLeaves });
                         window.app.renderer.render(layout);
                         this.jsonError = '';
                     } catch (e) {
