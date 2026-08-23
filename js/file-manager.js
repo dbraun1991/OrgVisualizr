@@ -193,7 +193,10 @@ export const fileManagerActions = {
      */
     async loadInitialData() {
         try {
-            const response = await fetch('data/example.json');
+            // no-store: this file ships with the app and can change between deployments;
+            // python's http.server sends no Cache-Control, so a plain reload can silently
+            // reuse a stale HTTP-cached copy from before such a change without this.
+            const response = await fetch('data/example.json', { cache: 'no-store' });
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             this.rawJson = await response.text();
             this.updateFromJson();
