@@ -37,8 +37,14 @@ export class ChartRenderer {
         const { config, root } = layout;
         const renderer = this;
 
+        // width/height="100%" + viewBox lets the canvas fill and track the container's
+        // size (including on window resize) with zero JS resize handling needed — the
+        // same pattern MetroRenderer uses. `xMidYMid meet` centers the chart and scales
+        // it down if it doesn't fit; d3.zoom (below) is how the user goes beyond that.
         const svg = d3.select(this.container)
             .append('svg')
+            .attr('width', '100%')
+            .attr('height', '100%')
             .attr('viewBox', `0 0 ${config.width} ${config.height}`)
             .attr('preserveAspectRatio', 'xMidYMid meet')
             .attr('class', 'org-svg');

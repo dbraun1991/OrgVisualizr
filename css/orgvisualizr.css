@@ -79,7 +79,10 @@ header h1 {
 
 .header-divider { width: 1px; align-self: stretch; background: var(--border-color); margin: 0 0.2rem; }
 
-.burger-btn { display: none; }
+/* Higher specificity than ".controls button" (which sets display:inline-flex on every
+   button under .header-right.controls, including this one) so it actually stays hidden
+   outside the mobile breakpoint below. */
+.action-menu-wrapper .burger-btn { display: none; }
 
 .action-menu-wrapper { position: relative; }
 .action-buttons-inner { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
@@ -115,10 +118,19 @@ main {
 
 #orgvisualizr-container {
     flex-grow: 1;
-    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
     background:
         radial-gradient(circle, #262626 1px, transparent 1px) 0 0/22px 22px,
         var(--bg-color);
+}
+
+/* width/height=100% on the <svg> (set in chart-renderer.js) only take effect if this
+   flex item is allowed to shrink/grow freely — min-height:0 is required for that here. */
+#orgvisualizr-container svg {
+    flex: 1;
+    min-height: 0;
 }
 
 .org-svg { display: block; }
@@ -416,7 +428,7 @@ main {
 
 @media (max-width: 720px) {
     header h1 { font-size: 1.05rem; }
-    .burger-btn { display: inline-flex; }
+    .action-menu-wrapper .burger-btn { display: inline-flex; }
     .action-buttons-inner {
         display: none;
         position: absolute;
