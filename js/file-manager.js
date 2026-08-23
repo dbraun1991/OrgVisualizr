@@ -255,16 +255,78 @@ export const fileManagerActions = {
     },
 
     /**
+     * Clones the live chart SVG and bakes the currently active theme's resolved
+     * colors into every element that normally gets its color from an external CSS
+     * custom property (card fill/stroke, name/title/department text, connectors).
+     *
+     * Exported SVG/PNG/PDF files have no access to css/orgvisualizr.css or its
+     * `:root`/`:root[data-theme="light"]` variables — a standalone SVG file, a
+     * canvas <img> load, and svg2pdf.js all render without that stylesheet. Without
+     * this, those elements fall back to the SVG default fill (black), which is
+     * invisible against the (also unstyled, black) card behind it — text only became
+     * visible when text-selected because the browser's selection highlight showed
+     * through. Reading the variables via getComputedStyle at export time (rather than
+     * hardcoding a palette) is also what makes the export follow whichever theme,
+     * light or dark, is active on screen right now.
+     * @returns {SVGElement} A detached, export-ready clone of the live chart SVG.
+     */
+    _prepareExportSvg() {
+        const svgElement = window.app.renderer.svgElement;
+        if (!svgElement) return null;
+
+        const clone = svgElement.cloneNode(true);
+        const themeVars = getComputedStyle(document.documentElement);
+        const v = (name) => themeVars.getPropertyValue(name).trim();
+
+        const viewBox = clone.getAttribute('viewBox').split(/\s+/).map(Number);
+        // Explicit pixel size instead of the inherited width="100%" height="100%" —
+        // those percentages only make sense inside a sized container, which an
+        // exported file or an off-screen-attached clone (for PDF export) doesn't have.
+        clone.setAttribute('width', viewBox[2]);
+        clone.setAttribute('height', viewBox[3]);
+
+        const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        bgRect.setAttribute('x', viewBox[0]);
+        bgRect.setAttribute('y', viewBox[1]);
+        bgRect.setAttribute('width', viewBox[2]);
+        bgRect.setAttribute('height', viewBox[3]);
+        bgRect.setAttribute('fill', v('--bg-color'));
+        clone.insertBefore(bgRect, clone.firstChild);
+
+        clone.querySelectorAll('.org-card').forEach((el) => {
+            el.setAttribute('fill', v('--card-bg'));
+            el.setAttribute('stroke', v('--card-stroke'));
+        });
+        clone.querySelectorAll('.org-card-name').forEach((el) => el.setAttribute('fill', v('--text-strong')));
+        clone.querySelectorAll('.org-card-title').forEach((el) => el.setAttribute('fill', v('--text-muted')));
+        clone.querySelectorAll('.org-card-department').forEach((el) => el.setAttribute('fill', v('--dept-text')));
+        clone.querySelectorAll('.org-link').forEach((el) => {
+            el.setAttribute('fill', 'none');
+            el.setAttribute('stroke', v('--link-stroke'));
+            el.setAttribute('stroke-width', '2');
+        });
+        // After the base .org-link pass above, so the staff-specific stroke/dash wins
+        // for links that carry both classes — same override order as the CSS itself.
+        clone.querySelectorAll('.org-link--staff').forEach((el) => {
+            el.setAttribute('stroke', v('--link-stroke-staff'));
+            el.setAttribute('stroke-width', '1.5');
+            el.setAttribute('stroke-dasharray', '5 4');
+        });
+
+        return clone;
+    },
+
+    /**
      * Serializes the current SVG element into a data URL.
      * @returns {string|null} The data URL of the SVG, or null if it fails.
      */
     _getSvgDataUrl() {
-        const svgElement = window.app.renderer.svgElement;
-        if (!svgElement) return null;
+        const exportSvg = this._prepareExportSvg();
+        if (!exportSvg) return null;
 
         try {
             const serializer = new XMLSerializer();
-            let source = serializer.serializeToString(svgElement);
+            let source = serializer.serializeToString(exportSvg);
 
             if (!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)) {
                 source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
@@ -343,6 +405,15 @@ export const fileManagerActions = {
         const height = svgElement.viewBox.baseVal.height;
 
         if (typeof window !== 'undefined' && window.jspdf && window.jspdf.jsPDF && window.svg2pdf) {
+            const exportSvg = this._prepareExportSvg();
+            // svg2pdf measures text (getBBox/getComputedTextLength), which needs the
+            // element to actually be part of the rendered document — attach it
+            // off-screen for the duration of the export, then remove it again.
+            exportSvg.style.position = 'absolute';
+            exportSvg.style.left = '-99999px';
+            exportSvg.style.top = '0';
+            document.body.appendChild(exportSvg);
+
             const pdf = new window.jspdf.jsPDF({
                 orientation: width > height ? 'landscape' : 'portrait',
                 unit: 'pt',
@@ -350,12 +421,14 @@ export const fileManagerActions = {
             });
 
             try {
-                await pdf.svg(svgElement, { x: 0, y: 0, width, height });
+                await pdf.svg(exportSvg, { x: 0, y: 0, width, height });
                 const filename = sanitizeFilename(this.currentFileName) + '.pdf';
                 pdf.save(filename);
             } catch (err) {
                 console.error('SVG-to-PDF export error:', err);
                 this.dialogAlert(i18next.t('js.pdfExportError') + err.message, i18next.t('js.errorTitle'));
+            } finally {
+                exportSvg.remove();
             }
         } else {
             console.error('jsPDF or svg2pdf library not found.');
