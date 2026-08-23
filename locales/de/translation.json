@@ -111,6 +111,13 @@
     "pngExportError": "Fehler beim PNG-Export.",
     "errorTitle": "Fehler",
     "savedTitle": "Gespeichert",
+    "cleanupResultTitle": "Aufräumen",
+    "cleanupNothingToDo": "Nichts zum Aufräumen — dieses Organigramm ist bereits gültig.",
+    "cleanupFixedPrefix": "Aufräumen hat behoben:",
+    "cleanupDangling_one": "{{count}} fehlerhafter Verweis",
+    "cleanupDangling_other": "{{count}} fehlerhafte Verweise",
+    "cleanupMergedRoots_one": "{{count}} doppelte Wurzel",
+    "cleanupMergedRoots_other": "{{count}} doppelte Wurzeln",
     "confirmTitle": "Bestätigen",
     "jsonRootMustBeObject": "Das JSON-Wurzelelement muss ein Objekt sein.",
     "textExportDefaultTitle": "Organigramm"

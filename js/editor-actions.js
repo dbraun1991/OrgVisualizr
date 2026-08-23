@@ -278,22 +278,38 @@ export const editorActions = {
     /**
      * Removes references to node IDs that no longer exist, and guarantees a single root.
      * Intent: user hand-edits in the JSON tab can leave dangling parentId references;
-     * this is a safety net invoked explicitly via the "Cleanup" action.
+     * this is a safety net invoked explicitly via the "Cleanup" action. Reports what (if
+     * anything) it actually fixed, since silently doing nothing when the tree is already
+     * valid — the common case — otherwise reads as the button not working at all.
      */
-    resortAndClean() {
+    async resortAndClean() {
         const idSet = new Set(this.data.nodes.map((n) => n.id));
+        let danglingCount = 0;
 
         this.data.nodes.forEach((n) => {
             if (n.parentId && !idSet.has(n.parentId)) {
                 n.parentId = null;
+                danglingCount += 1;
             }
         });
 
         // If cleanup produced more than one root, keep the first and reparent the rest to it.
         const rootsAfter = this.data.nodes.filter((n) => !n.parentId);
+        let mergedRootsCount = 0;
         if (rootsAfter.length > 1) {
             const [first, ...rest] = rootsAfter;
             rest.forEach((n) => { n.parentId = first.id; });
+            mergedRootsCount = rest.length;
         }
+
+        if (danglingCount === 0 && mergedRootsCount === 0) {
+            await this.dialogAlert(i18next.t('js.cleanupNothingToDo'), i18next.t('js.cleanupResultTitle'));
+            return;
+        }
+
+        const parts = [];
+        if (danglingCount > 0) parts.push(i18next.t('js.cleanupDangling', { count: danglingCount }));
+        if (mergedRootsCount > 0) parts.push(i18next.t('js.cleanupMergedRoots', { count: mergedRootsCount }));
+        await this.dialogAlert(i18next.t('js.cleanupFixedPrefix') + ' ' + parts.join(', ') + '.', i18next.t('js.cleanupResultTitle'));
     }
 };

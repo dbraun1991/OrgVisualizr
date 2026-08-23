@@ -111,6 +111,13 @@
     "pngExportError": "Error during PNG export.",
     "errorTitle": "Error",
     "savedTitle": "Saved",
+    "cleanupResultTitle": "Cleanup",
+    "cleanupNothingToDo": "Nothing to clean up — this chart is already valid.",
+    "cleanupFixedPrefix": "Cleanup fixed:",
+    "cleanupDangling_one": "{{count}} dangling reference",
+    "cleanupDangling_other": "{{count}} dangling references",
+    "cleanupMergedRoots_one": "{{count}} duplicate root",
+    "cleanupMergedRoots_other": "{{count}} duplicate roots",
     "confirmTitle": "Confirm",
     "jsonRootMustBeObject": "JSON root element must be an object.",
     "textExportDefaultTitle": "Org Chart"
