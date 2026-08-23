@@ -4,6 +4,8 @@ OrgVisualizr is a small, client-side web app for visualizing organizational char
 
 There is **no backend, no build step, no database**. It runs entirely in the browser.
 
+![OrgVisualizr UI](docs/pics/OrgVisualizrUI.png)
+
 ## Quick Start
 
 Since the app uses ES6 modules (`type="module"`), you can't open `index.html` directly from `file://` — serve it via a local web server:
