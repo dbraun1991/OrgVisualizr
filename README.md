@@ -4,7 +4,9 @@ OrgVisualizr is a small, client-side web app for visualizing organizational char
 
 There is **no backend, no build step, no database**. It runs entirely in the browser.
 
-**[Live demo → dbraun1991.github.io/OrgVisualizr](https://dbraun1991.github.io/OrgVisualizr/)** — no install needed, use it straight from GitHub Pages.
+**[Live demo via GitHub-Pages](https://dbraun1991.github.io/OrgVisualizr/)**
+
+OrgVisualizr UI:
 
 ![OrgVisualizr UI](docs/pics/OrgVisualizrUI.png)
 
