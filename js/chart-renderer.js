@@ -1,4 +1,5 @@
 import { escapeHtml, sanitizeHtml, getInitials } from './utils.js';
+import { getContrastTextColor } from './color-utils.js';
 
 /**
  * Builds an orthogonal (right-angle) elbow connector path between a parent
@@ -176,6 +177,7 @@ export class ChartRenderer {
             .attr('y', config.cardHeight / 2)
             .attr('text-anchor', 'middle')
             .attr('dominant-baseline', 'central')
+            .attr('fill', (o) => getContrastTextColor(o.occupant.color || '#4B5563'))
             .text((o) => getInitials(o.occupant.name));
 
         occupantGroups.append('text')
@@ -213,6 +215,7 @@ export class ChartRenderer {
             .attr('y', 14)
             .attr('text-anchor', 'middle')
             .attr('dominant-baseline', 'central')
+            .attr('fill', (d) => getContrastTextColor(d.data.color || '#4B5563'))
             .text((d) => `+${d.hiddenCount}`);
 
         occupantGroups

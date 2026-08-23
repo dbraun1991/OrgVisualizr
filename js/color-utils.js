@@ -25,6 +25,29 @@ export function hexToHsv(hex) {
 }
 
 /**
+ * Picks the more readable overlay text color (black or white) for text sitting on
+ * top of a solid hex fill — used for avatar initials and badge counts, which sit on
+ * a node's own color (any palette entry, or a custom hex from the picker) rather
+ * than a fixed app color, so a single hardcoded text color isn't reliably readable.
+ *
+ * Uses the standard YIQ perceived-brightness formula (weights green highest, blue
+ * lowest, matching human luminance perception) rather than raw HSV "value", since a
+ * saturated pure blue and a pale yellow can share the same HSV value while needing
+ * opposite text colors.
+ *
+ * @param {string} hex - The background hex color (e.g., "#FFD300").
+ * @returns {string} "#000000" or "#ffffff", whichever contrasts better.
+ */
+export function getContrastTextColor(hex) {
+    if (!hex || hex.length < 7) return '#ffffff';
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+    return yiq >= 150 ? '#000000' : '#ffffff';
+}
+
+/**
  * Sorts an array of hex colors primarily by hue (rainbow order).
  * Desaturated colors (grays) are pushed to the end and sorted by brightness.
  *

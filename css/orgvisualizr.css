@@ -214,11 +214,11 @@ main {
 
 .org-node--staff .org-card { stroke-dasharray: 4 3; }
 
-/* Initials sit on the avatar circle (occupant.color, a fixed brand color independent
-   of theme), so they stay literal white in both themes rather than using --text-strong. */
+/* Initials sit on the avatar circle (occupant.color, any picker color, independent of
+   theme) — fill is set inline in chart-renderer.js via getContrastTextColor() rather
+   than hardcoded here, since a light picker color (e.g. yellow) needs black text. */
 .org-card-avatar { opacity: 0.9; }
 .org-card-initials {
-    fill: #fff;
     font-size: 13px;
     font-weight: 700;
     pointer-events: none;
@@ -241,12 +241,11 @@ main {
     text-transform: uppercase;
     pointer-events: none;
 }
-/* Fill is set inline in chart-renderer.js (matches the node's own color, same as the
-   accent bar and avatar) rather than here, so a CSS rule can't out-specificity it. */
+/* Both fills are set inline in chart-renderer.js — the circle matches the node's own
+   color (like the accent bar and avatar), and the text uses getContrastTextColor()
+   against that same color, so a CSS rule can't out-specificity either one. */
 .org-card-badge { pointer-events: none; }
-/* Badge text sits on the badge circle (a node-color fill, not the page background), so
-   it stays literal white like the avatar initials above, regardless of theme. */
-.org-card-badge-text { fill: #fff; font-size: 10px; font-weight: 700; pointer-events: none; }
+.org-card-badge-text { font-size: 10px; font-weight: 700; pointer-events: none; }
 
 /* Tooltip: deliberately always dark, regardless of theme, for reliable contrast
    against either a light or dark page — so none of these are theme variables. */
