@@ -6,6 +6,18 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://d3js.org https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline'; connect-src *; font-src 'self' data:; img-src 'self' data:;">
     <title>OrgVisualizr - Org Chart Visualizer</title>
     <link rel="stylesheet" href="css/orgvisualizr.css">
+    <script>
+        // Applied synchronously, before first paint, so there's no flash of the wrong
+        // theme while app.js/Alpine are still loading.
+        (function () {
+            try {
+                var saved = localStorage.getItem('orgvisualizr_theme');
+                document.documentElement.setAttribute('data-theme', saved === 'light' ? 'light' : 'dark');
+            } catch (e) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        })();
+    </script>
     <script src="https://d3js.org/d3.v7.min.js" integrity="sha384-CjloA8y00+1SDAUkjs099PVfnY2KmDC2BZnws9kh8D/lX1s46w6EPhpXdqMfjK6i" crossorigin="anonymous"></script>
 </head>
 <body x-data="orgVisualizrApp"
@@ -25,6 +37,11 @@
         <p id="subtitle" class="d-none">Org Chart Visualizer</p>
 
         <div class="header-right controls">
+            <button @click="toggleTheme()" :title="$store.i18n.t('header.toggleTheme')">
+                <svg viewBox="0 0 24 24" x-show="theme === 'dark'"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>
+                <svg viewBox="0 0 24 24" x-show="theme !== 'dark'" x-cloak><path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.79 1.42-1.41zM4 10.5H1v2h3v-2zm9-9.95h-2V3.5h2V.55zm7.45 3.91l-1.41-1.41-1.79 1.79 1.41 1.41 1.79-1.79zm-3.21 13.7l1.79 1.8 1.41-1.41-1.8-1.79-1.4 1.4zM20 10.5v2h3v-2h-3zm-8-5a6 6 0 1 0 0 12 6 6 0 0 0 0-12zm-1 16.95h2V19.5h-2v2.95zm-7.45-3.91l1.41 1.41 1.79-1.8-1.41-1.41-1.79 1.8z"/></svg>
+                <span x-text="theme === 'dark' ? $store.i18n.t('header.themeDark') : $store.i18n.t('header.themeLight')">Theme</span>
+            </button>
             <button @click="editorVisible = !editorVisible" :title="$store.i18n.t('header.toggleEditor')" :class="{'btn-active': editorVisible}">
                 <svg viewBox="0 0 24 24" x-show="editorVisible"><path d="M3 3h18v18H3V3zm12 2v14h4V5h-4zM5 5v14h8V5H5z"/></svg>
                 <svg viewBox="0 0 24 24" x-show="!editorVisible" x-cloak><path d="M3 3h18v18H3V3zm4 2v14h12V5H7z"/></svg>

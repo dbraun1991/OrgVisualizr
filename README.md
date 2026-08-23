@@ -25,6 +25,7 @@ Then open `http://localhost:8000`.
 - **Import** — from a local JSON file (picker or drag-and-drop) or a remote HTTPS/HTTP URL.
 - **Export** — as JSON, SVG, PNG, or PDF.
 - **Share links** — compress the entire chart into a URL (`?data=...`) via LZ-string; open the link anywhere to reproduce the same chart, no server involved.
+- **Light and dark themes** — toggle in the header; persisted per-browser, applied before first paint (no flash).
 - **Localization** — English and German, with more languages easy to add (see below).
 
 ## Data Model / DSL

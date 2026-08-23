@@ -1,5 +1,8 @@
 {
   "header": {
+    "toggleTheme": "Switch between light and dark mode",
+    "themeDark": "Dark",
+    "themeLight": "Light",
     "toggleEditor": "Toggle Editor",
     "edit": "Edit",
     "unsaved": "-- Unsaved --",

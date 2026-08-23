@@ -1,5 +1,8 @@
 {
   "header": {
+    "toggleTheme": "Zwischen hellem und dunklem Modus wechseln",
+    "themeDark": "Dunkel",
+    "themeLight": "Hell",
     "toggleEditor": "Editor umschalten",
     "edit": "Bearbeiten",
     "unsaved": "-- Ungespeichert --",

@@ -1,13 +1,66 @@
+/* Dark theme (default). Light overrides are in the [data-theme="light"] block below —
+   every color used anywhere in the app is a variable here so both themes stay in sync.
+   A few colors are deliberately NOT variables (see notes at their usage sites): text
+   sitting on a fixed-color surface (accent buttons, colored avatar circles, the badge
+   circle) or inside the tooltip, which intentionally stays dark in both themes for
+   contrast against either page background. */
 :root {
     --bg-color: #121212;
     --text-color: #e0e0e0;
+    --text-strong: #ffffff;
     --text-muted: #999;
     --border-color: #333;
     --header-bg: #1a1a1a;
     --card-bg: #1e1e1e;
     --card-bg-hover: #262626;
+    --card-stroke: #3a3a3a;
+    --card-stroke-hover: #555;
+    --input-bg: #0d0d0d;
+    --btn-bg: #262626;
+    --btn-bg-hover: #333;
     --accent: #0078D4;
+    --accent-tint: rgba(0, 120, 212, 0.08);
+    --dept-text: #7fa8d9;
+    --link-stroke: #555;
+    --link-stroke-staff: #777;
+    --grid-dot: #262626;
+    --danger-bg: #4a1414;
+    --danger-border-hover: #6a1e1e;
+    --danger-text: #ff8a8a;
+    --footer-bg: #000000;
+    --footer-text: #999999;
+    --footer-link: #bbbbbb;
+    --modal-backdrop: rgba(0, 0, 0, 0.6);
     --font-family: Helvetica, "Helvetica Neue", Arial, "Liberation Sans", sans-serif;
+}
+
+:root[data-theme="light"] {
+    --bg-color: #f4f5f7;
+    --text-color: #262b36;
+    --text-strong: #0b0e14;
+    --text-muted: #6b7280;
+    --border-color: #d8dce3;
+    --header-bg: #ffffff;
+    --card-bg: #ffffff;
+    --card-bg-hover: #eef1f6;
+    --card-stroke: #d3d8e0;
+    --card-stroke-hover: #aab2c0;
+    --input-bg: #ffffff;
+    --btn-bg: #eef1f6;
+    --btn-bg-hover: #e2e6ee;
+    --accent: #0078D4;
+    --accent-tint: rgba(0, 120, 212, 0.1);
+    --dept-text: #2f6fb0;
+    --link-stroke: #9aa2b1;
+    --link-stroke-staff: #b7bec9;
+    --grid-dot: #dde1e8;
+    --danger-bg: #fdeaea;
+    --danger-border-hover: #f3b8b8;
+    --danger-text: #b3261e;
+    --footer-bg: #ffffff;
+    --footer-text: #6b7280;
+    --footer-link: #3d4453;
+    --modal-backdrop: rgba(15, 18, 24, 0.35);
 }
 
 * { box-sizing: border-box; }
@@ -54,13 +107,13 @@ header h1 {
     font-size: 1.3rem;
     font-weight: 600;
     letter-spacing: 0.3px;
-    color: #fff;
+    color: var(--text-strong);
 }
 
 .controls { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
 
 .controls button, .file-select, .lang-select {
-    background: #262626;
+    background: var(--btn-bg);
     border: 1px solid var(--border-color);
     color: var(--text-color);
     padding: 0.4rem 0.7rem;
@@ -73,7 +126,7 @@ header h1 {
     font-family: inherit;
 }
 
-.controls button:hover, .file-select:hover, .lang-select:hover { background: #333; }
+.controls button:hover, .file-select:hover, .lang-select:hover { background: var(--btn-bg-hover); }
 .controls button.btn-active { background: var(--accent); border-color: var(--accent); color: #fff; }
 .controls button svg { width: 16px; height: 16px; fill: currentColor; }
 
@@ -122,7 +175,7 @@ main {
     flex-direction: column;
     overflow: hidden;
     background:
-        radial-gradient(circle, #262626 1px, transparent 1px) 0 0/22px 22px,
+        radial-gradient(circle, var(--grid-dot) 1px, transparent 1px) 0 0/22px 22px,
         var(--bg-color);
 }
 
@@ -137,28 +190,30 @@ main {
 
 .org-link {
     fill: none;
-    stroke: #555;
+    stroke: var(--link-stroke);
     stroke-width: 2px;
 }
 
 /* Staff placement (ADR-004): dashed to read as support/staff authority, not a
    normal reporting line. */
 .org-link--staff {
-    stroke: #777;
+    stroke: var(--link-stroke-staff);
     stroke-width: 1.5px;
     stroke-dasharray: 5 4;
 }
 
 .org-card {
     fill: var(--card-bg);
-    stroke: #3a3a3a;
+    stroke: var(--card-stroke);
     stroke-width: 1px;
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
 }
-.org-node:hover .org-card { fill: var(--card-bg-hover); stroke: #555; }
+.org-node:hover .org-card { fill: var(--card-bg-hover); stroke: var(--card-stroke-hover); }
 
 .org-node--staff .org-card { stroke-dasharray: 4 3; }
 
+/* Initials sit on the avatar circle (occupant.color, a fixed brand color independent
+   of theme), so they stay literal white in both themes rather than using --text-strong. */
 .org-card-avatar { opacity: 0.9; }
 .org-card-initials {
     fill: #fff;
@@ -167,7 +222,7 @@ main {
     pointer-events: none;
 }
 .org-card-name {
-    fill: #fff;
+    fill: var(--text-strong);
     font-size: 13.5px;
     font-weight: 700;
     pointer-events: none;
@@ -178,16 +233,19 @@ main {
     pointer-events: none;
 }
 .org-card-department {
-    fill: #7fa8d9;
+    fill: var(--dept-text);
     font-size: 10.5px;
     letter-spacing: 0.3px;
     text-transform: uppercase;
     pointer-events: none;
 }
 .org-card-badge { fill: var(--accent); }
+/* Badge text sits on the accent circle, not the card — stays literal white like the
+   avatar initials above. */
 .org-card-badge-text { fill: #fff; font-size: 10px; font-weight: 700; pointer-events: none; }
 
-/* Tooltip */
+/* Tooltip: deliberately always dark, regardless of theme, for reliable contrast
+   against either a light or dark page — so none of these are theme variables. */
 .tooltip {
     position: absolute;
     pointer-events: none;
@@ -227,14 +285,14 @@ main {
     font-size: 0.85rem;
     border-bottom: 2px solid transparent;
 }
-.editor-tabs button.active { color: #fff; border-bottom-color: var(--accent); }
+.editor-tabs button.active { color: var(--text-strong); border-bottom-color: var(--accent); }
 
 .tab-content { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; min-height: 0; }
 
 #json-editor {
     flex-grow: 1;
-    background: #0d0d0d;
-    color: #d4d4d4;
+    background: var(--input-bg);
+    color: var(--text-color);
     border: none;
     padding: 0.8rem;
     font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
@@ -244,8 +302,8 @@ main {
 }
 #editor-error {
     padding: 0.5rem 0.8rem;
-    background: #4a1414;
-    color: #ff8a8a;
+    background: var(--danger-bg);
+    color: var(--danger-text);
     font-size: 0.78rem;
     flex-shrink: 0;
 }
@@ -258,7 +316,7 @@ main {
 .editor-section { display: flex; flex-direction: column; gap: 0.5rem; }
 
 .btn-small {
-    background: #262626;
+    background: var(--btn-bg);
     border: 1px solid var(--border-color);
     color: var(--text-color);
     padding: 0.25rem 0.6rem;
@@ -266,12 +324,12 @@ main {
     cursor: pointer;
     font-size: 0.75rem;
 }
-.btn-small:hover { background: #333; }
+.btn-small:hover { background: var(--btn-bg-hover); }
 
 .form-group { display: flex; flex-direction: column; gap: 0.2rem; margin-bottom: 0.5rem; }
 .form-group label { font-size: 0.72rem; color: var(--text-muted); }
 .form-group input[type="text"], .form-group input[type="url"], .form-group select, .form-group textarea {
-    background: #0d0d0d;
+    background: var(--input-bg);
     border: 1px solid var(--border-color);
     color: var(--text-color);
     padding: 0.4rem 0.5rem;
@@ -321,7 +379,7 @@ main {
 .collapse-icon { font-size: 0.65rem; color: var(--text-muted); }
 
 .btn-icon {
-    background: #262626;
+    background: var(--btn-bg);
     border: 1px solid var(--border-color);
     color: var(--text-color);
     width: 22px;
@@ -335,12 +393,12 @@ main {
     line-height: 1;
     padding: 0;
 }
-.btn-icon:hover { background: #333; }
+.btn-icon:hover { background: var(--btn-bg-hover); }
 .btn-icon:disabled { opacity: 0.35; cursor: not-allowed; }
 .btn-icon-sm { width: 20px; height: 20px; }
 .btn-icon-xs { width: 18px; height: 18px; font-size: 0.65rem; }
-.btn-danger { color: #ff8a8a; }
-.btn-danger:hover { background: #4a1414; border-color: #6a1e1e; }
+.btn-danger { color: var(--danger-text); }
+.btn-danger:hover { background: var(--danger-bg); border-color: var(--danger-border-hover); }
 
 .btn-desc-toggle { width: 100%; text-align: left; }
 .desc-textarea { width: 100%; resize: vertical; }
@@ -370,14 +428,14 @@ main {
     cursor: pointer;
     padding: 0;
 }
-.metro-swatch--active { border-color: #fff; }
+.metro-swatch--active { border-color: var(--text-strong); }
 .metro-swatch--custom { cursor: default; }
 
 /* Modals */
 .app-modal-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.6);
+    background: var(--modal-backdrop);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -398,7 +456,7 @@ main {
 .app-modal-message { white-space: pre-wrap; color: var(--text-color); font-size: 0.88rem; }
 .app-modal-input {
     width: 100%;
-    background: #0d0d0d;
+    background: var(--input-bg);
     border: 1px solid var(--border-color);
     color: var(--text-color);
     padding: 0.5rem;
@@ -407,13 +465,14 @@ main {
 }
 .app-modal-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem; }
 .app-modal-actions button {
-    background: #262626;
+    background: var(--btn-bg);
     border: 1px solid var(--border-color);
     color: var(--text-color);
     padding: 0.4rem 0.9rem;
     border-radius: 6px;
     cursor: pointer;
 }
+/* Sits on the accent-colored primary button, not the page — stays literal white. */
 .app-modal-btn-primary { background: var(--accent) !important; border-color: var(--accent) !important; color: #fff !important; }
 
 .import-dropzone {
@@ -426,27 +485,27 @@ main {
     font-size: 0.85rem;
     color: var(--text-muted);
 }
-.import-dropzone-active { border-color: var(--accent); background: rgba(0,120,212,0.08); }
+.import-dropzone-active { border-color: var(--accent); background: var(--accent-tint); }
 .import-url-label { font-size: 0.8rem; color: var(--text-muted); margin: 0.8rem 0 0.3rem; }
 .import-url-row { display: flex; gap: 0.4rem; }
-.import-url-row input { flex: 1; background: #0d0d0d; border: 1px solid var(--border-color); color: var(--text-color); padding: 0.4rem 0.5rem; border-radius: 5px; }
+.import-url-row input { flex: 1; background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-color); padding: 0.4rem 0.5rem; border-radius: 5px; }
 .import-url-row button { background: var(--accent); border: none; color: #fff; padding: 0.4rem 0.8rem; border-radius: 5px; cursor: pointer; }
 .import-cors-help { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.6rem; }
 
 /* Footer */
 .site-footer {
     flex-shrink: 0;
-    background: #000;
-    color: #999;
-    border-top: 1px solid #333;
+    background: var(--footer-bg);
+    color: var(--footer-text);
+    border-top: 1px solid var(--border-color);
     padding: 0.5rem 1rem;
     font-size: 12px;
     text-align: center;
 }
 .site-footer-inner { margin: 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.35rem 0.5rem; }
-.site-footer-link { color: #bbb; text-decoration: none; }
-.site-footer-link:hover { color: #fff; }
-.site-footer-sep { color: #555; }
+.site-footer-link { color: var(--footer-link); text-decoration: none; }
+.site-footer-link:hover { color: var(--text-strong); }
+.site-footer-sep { color: var(--border-color); }
 
 @media (max-width: 720px) {
     header h1 { font-size: 1.05rem; }

@@ -71,6 +71,7 @@ class App {
             Alpine.data('orgVisualizrApp', () => ({
                 editorVisible: false,
                 activeTab: 'visual',
+                theme: 'dark',
                 rawJson: '',
                 jsonError: '',
                 savedFiles: [],
@@ -111,6 +112,10 @@ class App {
 
                 async init() {
                     await i18nPromise;
+
+                    // The inline script in <head> already set this attribute pre-paint
+                    // (avoids a flash of the wrong theme); just mirror it into state.
+                    this.theme = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
 
                     this.loadIndex();
                     this.parseUrlParams();
@@ -183,6 +188,17 @@ class App {
                  */
                 onToggleNode(id) {
                     this.toggleCollapseById(id);
+                },
+
+                /**
+                 * Flips light/dark theme, persists the choice, and applies it immediately.
+                 */
+                toggleTheme() {
+                    this.theme = this.theme === 'dark' ? 'light' : 'dark';
+                    document.documentElement.setAttribute('data-theme', this.theme);
+                    try {
+                        localStorage.setItem('orgvisualizr_theme', this.theme);
+                    } catch (e) { /* private browsing / storage disabled — theme just won't persist */ }
                 },
 
                 /**
