@@ -179,4 +179,4 @@ Renders as a normal card with a "+N" badge (N = however many descendants `it-mgr
 
 ### Full realistic example
 
-See [`data/example.json`](../data/example.json) — the chart the app loads by default, exercising every feature above at once: a strict hierarchy, one co-led position, one staff position, one explicitly collapsed node, and (Technology) a department with multiple `group`s alongside an ungrouped lead.
+See [`data/example.json`](../data/example.json) — the chart the app loads by default, exercising every feature above at once: a strict hierarchy, one co-led position, one staff position, one explicitly collapsed node, (Technology) a department with multiple `group`s alongside an ungrouped lead, and (People and Culture) a department with reports but no `group`s at all.

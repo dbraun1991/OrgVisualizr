@@ -10,6 +10,7 @@
     { "id": "cto", "parentId": "ceo", "name": "John Roe", "title": "CTO", "department": "Technology", "color": "#FFD300", "description": "Leads engineering, product, and infrastructure." },
     { "id": "cfo", "parentId": "ceo", "name": "Maria Lopez", "title": "CFO", "department": "Finance", "color": "#66C028" },
     { "id": "cmo", "parentId": "ceo", "name": "Sam Patel", "title": "CMO", "department": "Marketing", "color": "#EE7623" },
+    { "id": "cpo", "parentId": "ceo", "name": "Emma Larsen", "title": "Chief People Officer", "department": "People and Culture", "color": "#9364CC", "description": "Leads People and Culture (Human Resources): recruiting, employee relations, and org development." },
 
     { "id": "eng-mgr", "parentId": "cto", "name": "Alex Kim", "title": "Engineering Manager", "department": "Technology", "color": "#FFD300", "group": "Development",
       "coOccupants": [ { "name": "Noah Bergmann", "title": "Co-Engineering Manager", "color": "#FFD300", "description": "Job-shares engineering leadership with Alex Kim." } ] },
@@ -36,6 +37,9 @@
     { "id": "mkt-mgr", "parentId": "cmo", "name": "Julia Fischer", "title": "Marketing Manager", "department": "Marketing", "color": "#EE7623", "group": "Content", "description": "Owns brand, campaigns, and content strategy." },
     { "id": "mkt1", "parentId": "mkt-mgr", "name": "Kevin Brandt", "title": "Content Specialist", "department": "Marketing", "color": "#EE7623" },
     { "id": "mkt-campaigns-mgr", "parentId": "cmo", "name": "Robert Adams", "title": "Campaigns Manager", "department": "Marketing", "color": "#EE7623", "group": "Campaigns" },
-    { "id": "campaigns1", "parentId": "mkt-campaigns-mgr", "name": "Ana Rossi", "title": "Campaign Coordinator", "department": "Marketing", "color": "#EE7623" }
+    { "id": "campaigns1", "parentId": "mkt-campaigns-mgr", "name": "Ana Rossi", "title": "Campaign Coordinator", "department": "Marketing", "color": "#EE7623" },
+
+    { "id": "hr1", "parentId": "cpo", "name": "Tobias Wright", "title": "People Partner", "department": "People and Culture", "color": "#9364CC" },
+    { "id": "hr2", "parentId": "cpo", "name": "Mia Andersson", "title": "Recruiter", "department": "People and Culture", "color": "#9364CC" }
   ]
 }

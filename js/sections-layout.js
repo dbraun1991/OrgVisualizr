@@ -1,3 +1,5 @@
+import { getContrastTextColor } from './color-utils.js';
+
 /**
  * Computes box positions for the "Sections" view — an abstraction over the org
  * tree that groups *leads* (nodes with at least one direct report — the same
@@ -10,6 +12,16 @@
  * simple box-packing layout (stack lead rows -> group box -> section box ->
  * row of section boxes wrapped by width), not a positioned hierarchy. Tier is
  * conveyed by sort order plus a per-row indent proportional to org depth.
+ *
+ * Two more things every section carries:
+ * - The section containing the tree's root node is always placed first, on a
+ *   row of its own above every other section — it's structurally "the top"
+ *   of the org, so it reads that way here too, not just alphabetically first.
+ * - Each section's box color is its own section lead's color — the shallowest
+ *   (lowest-depth) lead found in that section — with the rest of the box's
+ *   text/strokes switching to whichever of black/white contrasts against it
+ *   (`getContrastTextColor`, the same helper the avatar initials/badges use),
+ *   since a section's color is arbitrary per-chart data, not a themed default.
  */
 export class SectionsLayout {
     constructor() {
@@ -87,13 +99,20 @@ export class SectionsLayout {
 
         const sortByDepth = (list) => list.slice().sort((a, b) => depths.get(a.id) - depths.get(b.id));
 
+        const rootNode = nodes.find((n) => n.parentId === null);
+        const topSectionName = rootNode ? (rootNode.department || 'Other') : null;
+        const sortedNames = Array.from(bySection.keys()).sort();
+        const orderedNames = topSectionName && sortedNames.includes(topSectionName)
+            ? [topSectionName, ...sortedNames.filter((n) => n !== topSectionName)]
+            : sortedNames;
+
         const sections = [];
         let cursorX = margins.left;
         let cursorY = margins.top;
         let rowMaxHeight = 0;
         let maxRight = margins.left;
 
-        Array.from(bySection.keys()).sort().forEach((deptName) => {
+        orderedNames.forEach((deptName) => {
             const bucket = bySection.get(deptName);
             const leadRows = [];
             const groupBoxes = [];
@@ -129,6 +148,15 @@ export class SectionsLayout {
 
             const sectionHeight = y + sectionPadding;
 
+            // The section's own color is its shallowest lead's color — the lead
+            // closest to the root within this section — with everything else in the
+            // box switching to whichever text color contrasts against it.
+            const sectionLead = leadRows.reduce((min, r) => (min === null || r.depth < min.depth ? r : min), null);
+            const sectionColor = (sectionLead && sectionLead.node.color) || '#4B5563';
+            const sectionTextColor = getContrastTextColor(sectionColor);
+            leadRows.forEach((r) => { r.textColor = sectionTextColor; });
+            groupBoxes.forEach((g) => { g.textColor = sectionTextColor; });
+
             if (cursorX + sectionWidth > margins.left + wrapWidth && cursorX > margins.left) {
                 cursorX = margins.left;
                 cursorY += rowMaxHeight + sectionGapY;
@@ -138,12 +166,22 @@ export class SectionsLayout {
             sections.push({
                 id: deptName, name: deptName,
                 x: cursorX, y: cursorY, width: sectionWidth, height: sectionHeight,
+                color: sectionColor, textColor: sectionTextColor,
                 groupBoxes, leadRows
             });
 
             cursorX += sectionWidth + sectionGapX;
             rowMaxHeight = Math.max(rowMaxHeight, sectionHeight);
             maxRight = Math.max(maxRight, cursorX - sectionGapX);
+
+            // The root's own section always gets a row entirely to itself, elevated
+            // above every other section, regardless of whether the rest would
+            // otherwise still fit beside it.
+            if (deptName === topSectionName) {
+                cursorX = margins.left;
+                cursorY += rowMaxHeight + sectionGapY;
+                rowMaxHeight = 0;
+            }
         });
 
         const width = maxRight + margins.right;

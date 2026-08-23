@@ -47,7 +47,7 @@
                 <svg viewBox="0 0 24 24" x-show="!editorVisible" x-cloak><path d="M3 3h18v18H3V3zm4 2v14h12V5H7z"/></svg>
                 <span x-text="$store.i18n.t('header.edit')">Edit</span>
             </button>
-            <button @click="toggleView()" :title="$store.i18n.t('header.toggleView')" :class="{'btn-active': viewMode === 'sections'}">
+            <button @click="toggleView()" :title="$store.i18n.t('header.toggleView')" :class="{'btn-active': viewMode === 'sections'}" class="btn-view-toggle">
                 <svg viewBox="0 0 24 24" x-show="viewMode === 'tree'"><path d="M4 4h16v3H4V4zm2 6h12v3H6v-3zm3 6h6v3H9v-3z"/></svg>
                 <svg viewBox="0 0 24 24" x-show="viewMode === 'sections'" x-cloak><path d="M4 4h6v6H4V4zm10 0h6v6h-6V4zM4 14h6v6H4v-6zm10 0h6v6h-6v-6z"/></svg>
                 <span x-text="viewMode === 'tree' ? $store.i18n.t('header.viewTree') : $store.i18n.t('header.viewSections')">Tree</span>
