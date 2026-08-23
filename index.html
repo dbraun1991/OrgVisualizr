@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://d3js.org https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline'; connect-src *; font-src 'self' data:; img-src 'self' data:;">
+    <title>OrgVisualizr - Org Chart Visualizer</title>
+    <link rel="stylesheet" href="css/orgvisualizr.css">
+    <script src="https://d3js.org/d3.v7.min.js" integrity="sha384-CjloA8y00+1SDAUkjs099PVfnY2KmDC2BZnws9kh8D/lX1s46w6EPhpXdqMfjK6i" crossorigin="anonymous"></script>
+</head>
+<body x-data="orgVisualizrApp"
+      @toggle-node.window="onToggleNode($event.detail.id)"
+      @keydown.escape.window="onEscapeModal()">
+    <header id="header">
+        <div class="header-left flex-center">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" class="logo-icon">
+                <rect x="8" y="2" width="8" height="6" rx="1.5" fill="#0078D4"/>
+                <rect x="1" y="16" width="8" height="6" rx="1.5" fill="#66C028"/>
+                <rect x="15" y="16" width="8" height="6" rx="1.5" fill="#EE7623"/>
+                <path d="M12 8 V12 M12 12 H5 V16 M12 12 H19 V16" stroke="#888" stroke-width="1.5" fill="none"/>
+            </svg>
+            <h1>OrgVisualizr</h1>
+        </div>
+
+        <p id="subtitle" class="d-none">Org Chart Visualizer</p>
+
+        <div class="header-right controls">
+            <button @click="editorVisible = !editorVisible" :title="$store.i18n.t('header.toggleEditor')" :class="{'btn-active': editorVisible}">
+                <svg viewBox="0 0 24 24" x-show="editorVisible"><path d="M3 3h18v18H3V3zm12 2v14h4V5h-4zM5 5v14h8V5H5z"/></svg>
+                <svg viewBox="0 0 24 24" x-show="!editorVisible" x-cloak><path d="M3 3h18v18H3V3zm4 2v14h12V5H7z"/></svg>
+                <span x-text="$store.i18n.t('header.edit')">Edit</span>
+            </button>
+
+            <div class="action-menu-wrapper" x-data="{ mobileMenuOpen: false }" @click.away="mobileMenuOpen = false">
+                <button class="burger-btn" @click="mobileMenuOpen = !mobileMenuOpen" title="Menu">
+                    <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+                </button>
+
+                <div class="action-buttons-inner controls" :class="{ 'mobile-open': mobileMenuOpen }" @click="mobileMenuOpen = false">
+                    <select x-model="currentFileName" @change="loadFile(currentFileName)" class="file-select" @click.stop>
+                        <option value="" x-text="$store.i18n.t('header.unsaved')">-- Unsaved --</option>
+                        <template x-for="name in savedFiles" :key="name">
+                            <option :value="name" x-text="name"></option>
+                        </template>
+                    </select>
+
+                    <span class="header-divider desktop-only"></span>
+
+                    <button @click.stop="saveFile()" :title="$store.i18n.t('header.saveTitle')">
+                        <svg viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
+                        <span x-text="$store.i18n.t('header.save')">Save</span>
+                    </button>
+                    <button @click.stop="saveAsNew()" :title="$store.i18n.t('header.copyTitle')">
+                        <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                        <span x-text="$store.i18n.t('header.copy')">Copy as...</span>
+                    </button>
+                    <button @click.stop="createNew()" :title="$store.i18n.t('header.newTitle')">
+                        <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                        <span x-text="$store.i18n.t('header.new')">New</span>
+                    </button>
+                    <button @click.stop="resortAndClean()" :title="$store.i18n.t('header.cleanupTitle')">
+                        <svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
+                        <span x-text="$store.i18n.t('header.cleanup')">Cleanup</span>
+                    </button>
+
+                    <span class="header-divider desktop-only"></span>
+
+                    <button @click.stop="importModalOpen = true" :title="$store.i18n.t('header.importTitle')">
+                        <svg viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
+                        <span x-text="$store.i18n.t('header.import')">Import</span>
+                    </button>
+                    <button @click.stop="generateShareLink()" :title="$store.i18n.t('header.shareTitle')">
+                        <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>
+                        <span x-text="$store.i18n.t('header.share')">Share</span>
+                    </button>
+                    <div x-data="{ exportOpen: false }" class="pos-relative export-dropdown-container" @click.away="exportOpen = false">
+                        <button @click.stop="exportOpen = !exportOpen" :title="$store.i18n.t('header.exportTitle')">
+                            <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                            <span x-text="$store.i18n.t('header.export')">Export</span>
+                        </button>
+                        <div class="dropdown-menu" x-show="exportOpen" x-cloak>
+                            <a href="#" @click.prevent="exportSVG(); exportOpen = false" x-text="$store.i18n.t('header.exportSvg')">as SVG</a>
+                            <a href="#" @click.prevent="exportPNG(); exportOpen = false" x-text="$store.i18n.t('header.exportPng')">as PNG</a>
+                            <a href="#" @click.prevent="exportPDF(); exportOpen = false" x-text="$store.i18n.t('header.exportPdf')">as PDF</a>
+                            <a href="#" @click.prevent="exportJSON(); exportOpen = false" x-text="$store.i18n.t('header.exportJson')">as JSON</a>
+                        </div>
+                    </div>
+
+                    <span class="header-divider desktop-only"></span>
+
+                    <select
+                        x-data
+                        class="lang-select"
+                        :value="$store.i18n.locale.split('-')[0]"
+                        @change="$store.i18n.changeLanguage($event.target.value)"
+                        @click.stop
+                        title="Language / Sprache">
+                        <option value="en">EN</option>
+                        <option value="de">DE</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="app-modal-backdrop app-modal-backdrop--above" x-show="dialogOpen" x-cloak @click.self="dialogDismiss()">
+        <div class="app-modal" role="dialog" aria-labelledby="app-dialog-title" @click.stop>
+            <div class="app-modal-header">
+                <h2 id="app-dialog-title" x-text="dialogTitle"></h2>
+                <button type="button" class="app-modal-close" @click="dialogDismiss()" :aria-label="$store.i18n.t('dialog.close')">&times;</button>
+            </div>
+            <p class="app-modal-message" x-text="dialogMessage"></p>
+            <input type="text" id="dialog-prompt-input" class="app-modal-input" x-show="dialogMode === 'prompt'" x-model="dialogInput" @keydown.enter.prevent="dialogConfirmOk()">
+            <div class="app-modal-actions">
+                <button type="button" x-show="dialogMode === 'confirm' || dialogMode === 'prompt'" @click="dialogDismiss()" x-text="$store.i18n.t('dialog.cancel')">Cancel</button>
+                <button type="button" id="dialog-ok-btn" class="app-modal-btn-primary" @click="dialogConfirmOk()" x-text="$store.i18n.t('dialog.ok')">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-modal-backdrop" x-show="importModalOpen" x-cloak @click.self="importModalOpen = false">
+        <div class="app-modal" role="dialog" aria-labelledby="import-modal-title" @click.stop>
+            <div class="app-modal-header">
+                <h2 id="import-modal-title" x-text="$store.i18n.t('importModal.title')">Import</h2>
+                <button type="button" class="app-modal-close" @click="importModalOpen = false" :aria-label="$store.i18n.t('dialog.close')">&times;</button>
+            </div>
+            <input type="file" id="import-file-input" accept=".json,application/json" class="d-none" @change="handleImportFileInput($event)">
+            <div
+                class="import-dropzone"
+                :class="{ 'import-dropzone-active': importDropActive }"
+                @click="document.getElementById('import-file-input').click()"
+                @dragover.prevent="importDropActive = true; $event.dataTransfer.dropEffect = 'copy'"
+                @dragleave="if (!$event.relatedTarget || !$event.currentTarget.contains($event.relatedTarget)) importDropActive = false"
+                @drop="importDropHandler($event)"
+            >
+                <p x-html="$store.i18n.t('importModal.dropzoneHtml')"><strong>Drop a JSON file here</strong> or click to choose a file.</p>
+            </div>
+            <p class="import-url-label" x-text="$store.i18n.t('importModal.orUrl')">Or load from URL</p>
+            <div class="import-url-row">
+                <input type="url" x-model="importUrl" placeholder="https://example.com/orgchart.json" @keydown.enter.prevent="importFromUrl()">
+                <button type="button" @click="importFromUrl()" x-text="$store.i18n.t('importModal.load')">Load</button>
+            </div>
+            <p class="import-cors-help" x-html="$store.i18n.t('importModal.corsHelpHtml')">Your browser will only allow OrgVisualizr...</p>
+        </div>
+    </div>
+
+    <main>
+        <div id="editor-container" x-show="editorVisible">
+            <div class="editor-tabs">
+                <button :class="{'active': activeTab === 'visual'}" @click="activeTab = 'visual'" x-text="$store.i18n.t('editor.tabVisual')">Visual Editor</button>
+                <button :class="{'active': activeTab === 'json'}" @click="activeTab = 'json'" x-text="$store.i18n.t('editor.tabJson')">JSON</button>
+            </div>
+
+            <!-- JSON Editor Tab -->
+            <div class="tab-content" x-show="activeTab === 'json'">
+                <textarea id="json-editor" spellcheck="false" x-model="rawJson" @input="updateFromJson()"></textarea>
+                <div id="editor-error" :class="{'hidden': !jsonError}" x-text="jsonError"></div>
+            </div>
+
+            <!-- Visual Editor Tab -->
+            <div class="tab-content visual-editor" x-show="activeTab === 'visual'" x-cloak>
+
+                <div class="editor-section-container">
+                    <div class="section-header-top">
+                        <h3 class="editor-section-title" x-text="$store.i18n.t('editor.meta')">Metadata</h3>
+                    </div>
+                    <div class="editor-section">
+                        <div class="form-group">
+                            <label x-text="$store.i18n.t('editor.title')">Title</label>
+                            <input type="text" x-model="data.meta.title">
+                        </div>
+                        <div class="form-group">
+                            <label x-text="$store.i18n.t('editor.organization')">Organization</label>
+                            <input type="text" x-model="data.meta.organization">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="editor-section-container">
+                    <div class="section-header-top">
+                        <h3 class="editor-section-title" x-text="$store.i18n.t('editor.nodesTitle')">People / Roles</h3>
+                        <button class="btn-small" @click="addRootNode()" x-show="!getRootNode()" x-text="$store.i18n.t('editor.addRoot')">+ Root</button>
+                    </div>
+                    <div class="editor-section">
+                        <template x-for="entry in flatNodeList()" :key="getObjKey(entry.node)">
+                            <div class="card node-card" :id="'editor-node-' + entry.node.id" :style="`border-left-color: ${entry.node.color || '#4B5563'}; margin-left: ${entry.depth * 22}px;`" x-data="{ collapsed: entry.depth > 0 }">
+                                <div class="node-header-row" @click="collapsed = !collapsed">
+                                    <span class="node-depth-connector" x-show="entry.depth > 0">└</span>
+                                    <strong x-text="entry.node.name || $store.i18n.t('editor.newNode')" class="node-title"></strong>
+                                    <span class="node-title-role" x-show="entry.node.title" x-text="'— ' + entry.node.title"></span>
+                                    <div class="node-actions">
+                                        <button class="btn-icon btn-icon-sm" @click.stop="addChildNode(entry.node)" :title="$store.i18n.t('editor.addChild')">+</button>
+                                        <button class="btn-icon btn-danger btn-icon-xs" @click.stop="removeNode(entry.node)" x-show="entry.node.parentId" :title="$store.i18n.t('editor.delete')">✕</button>
+                                        <span x-text="collapsed ? '▼' : '▲'" class="collapse-icon"></span>
+                                    </div>
+                                </div>
+
+                                <div x-show="!collapsed" class="node-content">
+                                    <div class="form-row">
+                                        <div class="form-group flex-2">
+                                            <label x-text="$store.i18n.t('editor.name')">Name</label>
+                                            <input type="text" x-model="entry.node.name">
+                                        </div>
+                                        <div class="form-group flex-2">
+                                            <label x-text="$store.i18n.t('editor.role')">Role / Title</label>
+                                            <input type="text" x-model="entry.node.title">
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group flex-2">
+                                            <label x-text="$store.i18n.t('editor.department')">Department</label>
+                                            <input type="text" x-model="entry.node.department">
+                                        </div>
+                                        <div class="form-group metro-color-field flex-1" x-data="{ paletteOpen: false }" @click.outside="paletteOpen = false">
+                                            <label x-text="$store.i18n.t('editor.color')">Color</label>
+                                            <button type="button" x-ref="paletteTrigger" class="metro-color-trigger" :style="'background-color:' + (entry.node.color || '#4B5563')" @click.stop="paletteOpen = !paletteOpen; if (paletteOpen) $nextTick(() => $nextTick(() => window.orgvisualizrPositionPalette($refs.paletteTrigger, $refs.paletteMenu)))" :aria-expanded="paletteOpen" :title="$store.i18n.t('editor.chooseColor')"></button>
+                                            <div class="metro-palette-dropdown" x-ref="paletteMenu" x-show="paletteOpen" x-cloak @click.stop role="group" :aria-label="$store.i18n.t('editor.color') + ': ' + entry.node.name">
+                                                <div class="metro-palette metro-palette--compact">
+                                                    <template x-if="entry.node.color && !colorInPalette(entry.node.color)">
+                                                        <button type="button" class="metro-swatch metro-swatch--compact metro-swatch--custom metro-swatch--active" :style="'background-color:' + entry.node.color" tabindex="-1" aria-hidden="true"></button>
+                                                    </template>
+                                                    <template x-for="c in deptPalette" :key="c">
+                                                        <button type="button" class="metro-swatch metro-swatch--compact" :style="'background-color:' + c" :title="c" :class="{ 'metro-swatch--active': paletteColorsEqual(entry.node.color, c) }" @click="entry.node.color = c; paletteOpen = false"></button>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-row" x-show="entry.node.parentId">
+                                        <div class="form-group flex-1">
+                                            <label x-text="$store.i18n.t('editor.reportsTo')">Reports to</label>
+                                            <select :value="entry.node.parentId" @change="reparentNode(entry.node, $event.target.value)">
+                                                <template x-for="p in getEligibleParents(entry.node)" :key="p.id">
+                                                    <option :value="p.id" x-text="p.name" :selected="p.id === entry.node.parentId"></option>
+                                                </template>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group checkbox-group">
+                                            <input type="checkbox" x-model="entry.node.collapsed" :id="'collapse-' + entry.node.id" class="w-auto">
+                                            <label :for="'collapse-' + entry.node.id" class="checkbox-label" x-text="$store.i18n.t('editor.collapseInChart')">Collapse subtree in chart</label>
+                                        </div>
+                                    </div>
+                                    <div class="form-row mt-2" x-data="{ showDesc: !!entry.node.description }">
+                                        <div class="w-100">
+                                            <button class="btn-small btn-desc-toggle" @click="showDesc = !showDesc" x-text="showDesc ? $store.i18n.t('editor.descHide') : (entry.node.description ? $store.i18n.t('editor.descEdit') : $store.i18n.t('editor.descAdd'))"></button>
+                                            <div x-show="showDesc" class="mt-2">
+                                                <textarea x-model="entry.node.description" :placeholder="$store.i18n.t('editor.descPlaceholder')" rows="3" class="desc-textarea"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div id="orgvisualizr-container"></div>
+        <div id="tooltip" class="tooltip hidden"></div>
+    </main>
+    <footer class="site-footer" role="contentinfo">
+        <p class="site-footer-inner">
+            <span class="hide-mobile" x-text="$store.i18n.t('footer.copyright')"></span>
+            <span class="site-footer-sep hide-mobile" aria-hidden="true">·</span>
+            <a href="https://github.com/dbraun1991/OrgVisualizr" class="site-footer-link" rel="noopener noreferrer" target="_blank" :title="$store.i18n.t('footer.githubTitle')">GitHub</a>
+            <span class="site-footer-sep hide-mobile" aria-hidden="true">·</span>
+            <a href="LICENSE" class="site-footer-link hide-mobile" :title="$store.i18n.t('footer.licenseTitle')" x-text="$store.i18n.t('footer.license')"></a>
+        </p>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/i18next@23/i18next.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/i18next-http-backend@2/i18nextHttpBackend.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/i18next-browser-languagedetector@7/i18nextBrowserLanguageDetector.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.9/dist/purify.min.js" integrity="sha384-3HPB1XT51W3gGRxAmZ+qbZwRpRlFQL632y8x+adAqCr4Wp3TaWwCLSTAJJKbyWEK" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@12.0.1/marked.min.js" integrity="sha384-3zf4Pen4fXU90jGg3cxmo7BF4dq8HMtF2s07c/Hhd1Fh+Encm6ApPvNm8vrMJbWu" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js" integrity="sha384-0d+Gr7vM4Drod8E3hXKgciWJSWbjD/opKLLygI9ktiWbuvlDwQLzU46wJ9s5gsp7" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/svg2pdf.js@2.7.0/dist/svg2pdf.umd.min.js" integrity="sha384-UMdplNeJF/mRqnsNO/vfK5po5eKyTMGCymHkdARQ9NFscA4DX3buGxfhUJcPLbWj" crossorigin="anonymous"></script>
+    <script type="module" src="js/app.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js" integrity="sha384-Rpe/8orFUm5Q1GplYBHxbuA8Az8O8C5sAoOsdbRWkqPjKFaxPgGZipj4zeHL7lxX" crossorigin="anonymous"></script>
+</body>
+</html>
