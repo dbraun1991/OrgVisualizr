@@ -174,6 +174,25 @@ export const editorActions = {
     },
 
     /**
+     * Recolors every descendant of `node` — direct reports, their reports, and so on
+     * down the whole subtree, including each descendant's co-occupants — to `node`'s
+     * own current color. `node` itself (and its own co-occupants, who are peers of
+     * `node` rather than reports) are left untouched.
+     * @param {Object} node - The position whose color propagates down to its reports.
+     */
+    applyColorToSubtree(node) {
+        const color = node.color;
+        const paint = (id) => {
+            this.getChildren(id).forEach((child) => {
+                child.color = color;
+                (child.coOccupants || []).forEach((co) => { co.color = color; });
+                paint(child.id);
+            });
+        };
+        paint(node.id);
+    },
+
+    /**
      * A "staff" placement node cannot itself have children in v1 (ADR-004) — used to
      * disable that option in the editor for a node that currently has direct reports.
      * @param {Object} node - The node to check.

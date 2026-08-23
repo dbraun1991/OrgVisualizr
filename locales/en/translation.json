@@ -51,6 +51,8 @@
     "color": "Color",
     "chooseColor": "Choose Color",
     "reportsTo": "Reports to",
+    "applyColorBelow": "Set Color for All Below",
+    "applyColorBelowTitle": "Recolor every direct and indirect report under this position to match this color",
     "placement": "Placement",
     "placementLine": "Line",
     "placementStaff": "Staff",

@@ -236,6 +236,9 @@
                                             </select>
                                         </div>
                                     </div>
+                                    <div class="form-row" x-show="getChildren(entry.node.id).length > 0">
+                                        <button type="button" class="btn-small" @click="applyColorToSubtree(entry.node)" :title="$store.i18n.t('editor.applyColorBelowTitle')" x-text="$store.i18n.t('editor.applyColorBelow')">Set Color for All Below</button>
+                                    </div>
                                     <div class="form-row">
                                         <div class="form-group flex-1">
                                             <label x-text="$store.i18n.t('editor.placement')">Placement</label>

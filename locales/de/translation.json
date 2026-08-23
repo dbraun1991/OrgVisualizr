@@ -51,6 +51,8 @@
     "color": "Farbe",
     "chooseColor": "Farbe wählen",
     "reportsTo": "Berichtet an",
+    "applyColorBelow": "Farbe auf alle Unterstellten anwenden",
+    "applyColorBelowTitle": "Alle direkt und indirekt unterstellten Personen unter dieser Position in dieser Farbe einfärben",
     "placement": "Platzierung",
     "placementLine": "Linie",
     "placementStaff": "Stab",
