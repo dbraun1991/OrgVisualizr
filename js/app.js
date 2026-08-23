@@ -245,7 +245,7 @@ class App {
                         const clone = JSON.parse(JSON.stringify(jsonData));
                         const normalizedData = window.app.dataModel.validateAndNormalize(clone);
                         if (this.viewMode === 'sections') {
-                            const layout = window.app.sectionsLayout.calculate(normalizedData);
+                            const layout = window.app.sectionsLayout.calculate(normalizedData, { hideLeaves: this.hideLeaves });
                             window.app.renderer.renderSections(layout);
                         } else {
                             const layout = window.app.layoutEngine.calculate(normalizedData, { hideLeaves: this.hideLeaves });

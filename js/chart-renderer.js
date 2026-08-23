@@ -1,22 +1,6 @@
-import { escapeHtml, sanitizeHtml, getInitials, truncateText } from './utils.js';
+import { escapeHtml, sanitizeHtml, getInitials, truncateText, buildElbowPath } from './utils.js';
 import { getContrastTextColor } from './color-utils.js';
 import { renderSectionsSvg } from './sections-renderer.js';
-
-/**
- * Builds an orthogonal (right-angle) elbow connector path between a parent
- * card's bottom-center and a child card's top-center — the classic
- * org-chart connector style, as opposed to smooth/curved links.
- *
- * @param {number} px - Parent bottom-center X.
- * @param {number} py - Parent bottom-center Y.
- * @param {number} cx - Child top-center X.
- * @param {number} cy - Child top-center Y.
- * @returns {string} SVG path string.
- */
-function buildElbowPath(px, py, cx, cy) {
-    const midY = py + (cy - py) / 2;
-    return `M${px},${py}V${midY}H${cx}V${cy}`;
-}
 
 /**
  * Builds a connector from a manager's right edge to a staff position's left

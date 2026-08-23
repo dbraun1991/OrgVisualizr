@@ -208,6 +208,13 @@ main {
     stroke-dasharray: 5 4;
 }
 
+/* Sections view: connector from the root section down to each other section. */
+.section-link {
+    fill: none;
+    stroke: var(--link-stroke);
+    stroke-width: 2px;
+}
+
 .org-card {
     fill: var(--card-bg);
     stroke: var(--card-stroke);

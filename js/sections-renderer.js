@@ -1,4 +1,4 @@
-import { truncateText } from './utils.js';
+import { truncateText, buildElbowPath } from './utils.js';
 
 /**
  * Draws the "Sections" view: one box per department, containing named group
@@ -15,7 +15,7 @@ import { truncateText } from './utils.js';
  * @returns {{svg: d3.Selection, zoomGroup: d3.Selection}}
  */
 export function renderSectionsSvg(container, layout) {
-    const { config, sections } = layout;
+    const { config, sections, connectors } = layout;
 
     const svg = d3.select(container)
         .append('svg')
@@ -26,6 +26,17 @@ export function renderSectionsSvg(container, layout) {
         .attr('class', 'org-svg sections-svg');
 
     const zoomGroup = svg.append('g').attr('class', 'zoom-group');
+
+    // The root section's connector down to each other section — drawn before the
+    // section boxes so the boxes paint over the line's end rather than the line
+    // painting over a box edge.
+    zoomGroup.append('g')
+        .attr('class', 'section-links')
+        .selectAll('path')
+        .data(connectors || [])
+        .join('path')
+        .attr('class', 'section-link')
+        .attr('d', (c) => buildElbowPath(c.x1, c.y1, c.x2, c.y2));
 
     const sectionGroups = zoomGroup.append('g')
         .attr('class', 'sections')

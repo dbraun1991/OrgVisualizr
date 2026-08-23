@@ -318,11 +318,18 @@ export const fileManagerActions = {
             el.setAttribute('stroke-dasharray', '5 4');
         });
 
-        // Sections view (see sections-renderer.js): section-rect/title, group-rect/
-        // title, and lead-name/title are NOT baked here, unlike the tree-view classes
-        // above — their fill/stroke is each section's own lead's color (and a
-        // matching contrast color), already set inline by sections-renderer.js
-        // itself, not a theme default this function would know how to reconstruct.
+        // Sections view (see sections-renderer.js): the root-to-section connector
+        // uses the same themed stroke as .org-link, so it needs the same baking.
+        clone.querySelectorAll('.section-link').forEach((el) => {
+            el.setAttribute('fill', 'none');
+            el.setAttribute('stroke', v('--link-stroke'));
+            el.setAttribute('stroke-width', '2');
+        });
+        // section-rect/title, group-rect/title, and lead-name/title are NOT baked
+        // here, unlike the tree-view classes above — their fill/stroke is each
+        // section's own lead's color (and a matching contrast color), already set
+        // inline by sections-renderer.js itself, not a theme default this function
+        // would know how to reconstruct.
 
         return clone;
     },

@@ -89,7 +89,7 @@ A staff node can still have `coOccupants` — the two features are orthogonal (e
 
 ## Sections View: `group`
 
-The header's Tree/Sections toggle switches the whole canvas to a second, more abstract view: instead of the org chart, it shows one box per `department` ("section"), and within it, one sub-box per distinct `group` value found among that department's *leads* — nodes with at least one direct report. Leaves (nodes with no reports of their own) are never shown in this view, matching the definition "Hide leaves" already uses.
+The header's Tree/Sections toggle switches the whole canvas to a second, more abstract view: instead of the org chart, it shows one box per `department` ("section"), and within it, one sub-box per distinct effective `group` found among that department's people (see below). "Hide leaves" applies here exactly as it does in the tree view — on by default it shows everyone; toggling it hides anyone with no direct reports of their own, staff positions excepted, same as ADR-005 already defines for the tree.
 
 ```json
 { "id": "eng-mgr", "parentId": "cto", "name": "Alex Kim", "title": "Engineering Manager", "department": "Technology", "group": "Development" }
@@ -98,12 +98,14 @@ The header's Tree/Sections toggle switches the whole canvas to a second, more ab
 Rules:
 
 - `group` is scoped *within* `department` — two different departments can each have a group named the same thing (e.g. two "Operations" groups) without colliding; they render as separate boxes in their respective sections.
-- A lead with no `group` set renders directly under its section, not nested in any group box — so a chart with no `group` fields at all still renders in Sections view (every lead, flat, under its department); this keeps `group` fully backward-compatible with existing charts.
-- Leads within a group (or ungrouped, directly under a section) are sorted by their tier — depth in the org tree — and indented accordingly, so a lead's relative seniority within that group is visible at a glance even though the view otherwise omits the tree's connector lines.
+- A person's **effective group** is their own `group`, or — failing that — the nearest ancestor's within the same department. This is what puts a leaf in the same group box as their manager (e.g. an engineer under a `group: "Development"` manager) instead of scattering them ungrouped at the section level just because they don't carry the field themselves.
+- Someone with no effective group at all — including every ancestor up to the department boundary — renders directly under their section instead of inside a group box. So a chart with no `group` fields at all still renders sensibly in Sections view (everyone flat, under their department); this keeps `group` fully backward-compatible with existing charts.
+- People within a group (or ungrouped, directly under a section) are sorted by their tier — depth in the org tree — and indented accordingly, so relative seniority is visible at a glance even though the view otherwise omits the tree's connector lines.
 - The section name is drawn exactly once, at the top of the section box — never repeated per group.
-- `coOccupants` are not shown in Sections view; only the primary occupant of a lead position appears.
+- The section containing the tree's root node is centered on a row of its own, above every other section, with a connector line down to each of them.
+- `coOccupants` are not shown in Sections view; only the primary occupant of a position appears.
 
-See [`data/example.json`](../data/example.json) for a worked example covering all three cases (a department with multiple groups, a department with a mix of grouped and ungrouped leads, and a department with no groups at all).
+See [`data/example.json`](../data/example.json) for a worked example covering all three cases (a department with multiple groups, a department with a mix of grouped and ungrouped people, and a department with no groups at all).
 
 ## Collapse vs. Hide Leaves
 

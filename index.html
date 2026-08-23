@@ -350,10 +350,7 @@
             </div>
 
             <div class="editor-sidebar-footer">
-                <!-- The Sections view always shows leads only (never leaves), so this
-                     switch has nothing to control there — hidden rather than left as a
-                     misleading no-op. -->
-                <div class="editor-sidebar-footer-row" x-show="viewMode !== 'sections'">
+                <div class="editor-sidebar-footer-row">
                     <span>
                         <span class="editor-sidebar-footer-label" x-text="$store.i18n.t('editor.hideLeaves')">Hide leaves</span>
                         <span class="editor-sidebar-footer-hint" x-text="$store.i18n.t('editor.hideLeavesHint')">People with no reports of their own</span>

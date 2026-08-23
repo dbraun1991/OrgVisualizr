@@ -45,7 +45,7 @@ No server. No build step. No database.
 | `js/data-model.js` | Validates/normalizes chart JSON — root/id/parentId/cycle checks, `coOccupants`/`placement` rules (ADR-004) |
 | `js/layout-engine.js` | `data -> {x,y}` via `d3.stratify()`/`d3.tree()`; co-occupant cluster widths, staff positioning, `hideLeaves` pruning (ADR-004, ADR-005) |
 | `js/chart-renderer.js` | Tree view: `{x,y} -> SVG` — occupant cards, elbow/staff connectors, "+N" badges, tooltips, pan/zoom. Also `renderSections()`, the Sections view's container/svgElement/zoom owner (ADR-006) |
-| `js/sections-layout.js` | Sections view: normalized data -> section/group/lead-row box positions, leads-only, tier-indented (ADR-006) |
+| `js/sections-layout.js` | Sections view: normalized data -> section/group/row box positions, tier-indented, root section centered with connectors (ADR-006) |
 | `js/sections-renderer.js` | Sections view: box layout -> SVG (section/group rects+titles, one text row per lead) (ADR-006) |
 | `js/editor-actions.js` | Visual editor mutations — add/remove nodes and co-occupants, reparent, collapse, delete guardrail (ADR-005), recolor subtree |
 | `js/file-manager.js` | `localStorage` save/load/delete, JSON/SVG/PNG/PDF export (both views), remote JSON import |
@@ -89,7 +89,7 @@ To add a language:
 
 ## Sections View (ADR-006)
 
-A second, more abstract view (header toggle, `viewMode` in `app.js`) that steps back from individuals toward organizational shape: one box per `department` ("section"), containing named sub-group boxes for the optional `group` field, listing only *leads* (nodes with at least one direct report — the same rule `hideLeaves` uses) sorted and indented by tier (tree depth). A lead with no `group` renders directly under its section instead of in a group box. Rendered as a single text row per lead (color dot + name/title) — deliberately no card/avatar, unlike the Tree view. `group` has zero effect on the Tree view or on validation; it's purely additive.
+A second, more abstract view (header toggle, `viewMode` in `app.js`) that steps back from individuals toward organizational shape: one box per `department` ("section"), containing named sub-group boxes for each effective `group` (a person's own `group`, or the nearest ancestor's within the same department — see `docs/dsl.md`). Same `hideLeaves` option as the tree view, including the same staff-are-never-hidden carve-out (ADR-005) — Sections view shows everyone by default. Rows are sorted and indented by tier (tree depth). The root's own section is centered on a row above the rest, connected to each of them by a line. Rendered as a single text row per person (color dot + name/title) — deliberately no card/avatar, unlike the Tree view. `group` has zero effect on the Tree view or on validation; it's purely additive.
 
 ## Architecture Decisions
 
@@ -100,7 +100,7 @@ A second, more abstract view (header toggle, `viewMode` in `app.js`) that steps 
 | [ADR-003](docs/adrs/ADR-003-persistence-and-sharing.md) | `localStorage` + JSON/SVG/PNG/PDF export, no backend (share links removed, see ADR update) |
 | [ADR-004](docs/adrs/ADR-004-co-occupancy-and-staff-placement.md) | Co-leadership (`coOccupants`) and staff placement (`placement`) as attributes on the strict tree, not new edge types |
 | [ADR-005](docs/adrs/ADR-005-editor-guardrails-and-view-controls.md) | Delete only when childless; "Hide leaves"/"Manage" as view-only state, not data; saved charts deletable via the Files modal |
-| [ADR-006](docs/adrs/ADR-006-sections-view.md) | Sections view: department/group-of-leads abstraction, driven by a new optional `group` field, leads-only, tier-indented |
+| [ADR-006](docs/adrs/ADR-006-sections-view.md) | Sections view: department/group abstraction, driven by a new optional `group` field, tier-indented, shares "Hide leaves" with the tree view |
 
 ## What It Does NOT Do
 

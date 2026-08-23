@@ -81,6 +81,23 @@ export function truncateText(str, max) {
 }
 
 /**
+ * Builds an orthogonal (right-angle) elbow connector path from a parent point to
+ * a child point — the classic org-chart connector style, as opposed to smooth/
+ * curved links. Shared by chart-renderer.js (person-to-person) and
+ * sections-renderer.js (root-section-to-section).
+ *
+ * @param {number} px - Parent bottom-center X.
+ * @param {number} py - Parent bottom-center Y.
+ * @param {number} cx - Child top-center X.
+ * @param {number} cy - Child top-center Y.
+ * @returns {string} SVG path string.
+ */
+export function buildElbowPath(px, py, cx, cy) {
+    const midY = py + (cy - py) / 2;
+    return `M${px},${py}V${midY}H${cx}V${cy}`;
+}
+
+/**
  * Derives up to two initials from a person's display name, for use in the avatar circle.
  *
  * @param {string} name - The full display name.
