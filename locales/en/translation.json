@@ -20,7 +20,8 @@
     "exportSvg": "as SVG",
     "exportPng": "as PNG",
     "exportPdf": "as PDF",
-    "exportJson": "as JSON"
+    "exportJson": "as JSON",
+    "exportText": "as Text"
   },
   "dialog": {
     "cancel": "Cancel",
@@ -96,10 +97,11 @@
     "errorTitle": "Error",
     "savedTitle": "Saved",
     "confirmTitle": "Confirm",
-    "jsonRootMustBeObject": "JSON root element must be an object."
+    "jsonRootMustBeObject": "JSON root element must be an object.",
+    "textExportDefaultTitle": "Org Chart"
   },
   "footer": {
-    "copyright": "© 2026 Dominik Braun",
+    "copyright": "OrgVisualizr",
     "githubTitle": "OrgVisualizr source repository",
     "licenseTitle": "MIT License (full text)",
     "license": "MIT License"

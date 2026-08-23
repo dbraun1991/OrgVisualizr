@@ -20,7 +20,8 @@
     "exportSvg": "als SVG",
     "exportPng": "als PNG",
     "exportPdf": "als PDF",
-    "exportJson": "als JSON"
+    "exportJson": "als JSON",
+    "exportText": "als Text"
   },
   "dialog": {
     "cancel": "Abbrechen",
@@ -96,10 +97,11 @@
     "errorTitle": "Fehler",
     "savedTitle": "Gespeichert",
     "confirmTitle": "Bestätigen",
-    "jsonRootMustBeObject": "Das JSON-Wurzelelement muss ein Objekt sein."
+    "jsonRootMustBeObject": "Das JSON-Wurzelelement muss ein Objekt sein.",
+    "textExportDefaultTitle": "Organigramm"
   },
   "footer": {
-    "copyright": "© 2026 Dominik Braun",
+    "copyright": "OrgVisualizr",
     "githubTitle": "OrgVisualizr Quellcode-Repository",
     "licenseTitle": "MIT-Lizenz (Volltext)",
     "license": "MIT-Lizenz"

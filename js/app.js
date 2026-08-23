@@ -7,6 +7,7 @@ import { dialogActions } from './dialog.js';
 import { urlStateActions } from './url-state.js';
 import { fileManagerActions } from './file-manager.js';
 import { editorActions } from './editor-actions.js';
+import { textExportActions } from './text-export.js';
 
 const urlParams = new URLSearchParams(window.location.search);
 const langParam = urlParams.get('lang');
@@ -96,6 +97,7 @@ class App {
                 ...urlStateActions,
                 ...fileManagerActions,
                 ...editorActions,
+                ...textExportActions,
 
                 /**
                  * Returns a stable render key for mutable editor objects.

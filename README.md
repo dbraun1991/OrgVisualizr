@@ -74,6 +74,7 @@ Example with both:
 - **SVG** — the exact current chart view, sanitized for safe standalone use.
 - **PNG** — high-resolution raster render of the current view.
 - **PDF** — vector PDF sized to the chart's dimensions.
+- **Text** — a nested Markdown bullet list of the whole hierarchy (name, role, department, staff notes, descriptions), for pasting into docs or reading without the app.
 
 ## Contributing: How to Add a New Language
 
