@@ -285,6 +285,11 @@ export const fileManagerActions = {
         clone.setAttribute('width', viewBox[2]);
         clone.setAttribute('height', viewBox[3]);
 
+        // A standalone SVG file or a PNG's <img> load has no access to the app's
+        // `body { font-family: ... }` CSS rule either, so without this every text
+        // element falls back to whatever default font the viewer/OS happens to use.
+        clone.querySelectorAll('text').forEach((el) => el.setAttribute('font-family', v('--font-family')));
+
         const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
         bgRect.setAttribute('x', viewBox[0]);
         bgRect.setAttribute('y', viewBox[1]);

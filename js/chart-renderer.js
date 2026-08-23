@@ -175,8 +175,13 @@ export class ChartRenderer {
             .attr('class', 'org-card-initials')
             .attr('x', 34)
             .attr('y', config.cardHeight / 2)
+            // dy="0.35em" + text-anchor:middle centers text on its (x,y) point using only
+            // the alphabetic baseline math every renderer supports. dominant-baseline:
+            // central would do the same in a browser, but svg2pdf.js (PDF export) doesn't
+            // support it and silently falls back to the alphabetic baseline, offsetting
+            // the text — this approach renders identically everywhere instead.
+            .attr('dy', '0.35em')
             .attr('text-anchor', 'middle')
-            .attr('dominant-baseline', 'central')
             .attr('fill', (o) => getContrastTextColor(o.occupant.color || '#4B5563'))
             .text((o) => getInitials(o.occupant.name));
 
@@ -213,8 +218,10 @@ export class ChartRenderer {
             .attr('class', 'org-card-badge-text')
             .attr('x', (d) => this._clusterWidth(d.data, config) - 14)
             .attr('y', 14)
+            // See the org-card-initials text above for why dy="0.35em" is used instead
+            // of dominant-baseline: central here.
+            .attr('dy', '0.35em')
             .attr('text-anchor', 'middle')
-            .attr('dominant-baseline', 'central')
             .attr('fill', (d) => getContrastTextColor(d.data.color || '#4B5563'))
             .text((d) => `+${d.hiddenCount}`);
 

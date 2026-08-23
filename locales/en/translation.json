@@ -70,7 +70,7 @@
     "collapseInChart": "Collapse subtree in chart",
     "hideLeaves": "Hide leaves",
     "hideLeavesHint": "People with no reports of their own",
-    "manageMode": "Manage",
+    "manageMode": "Manage nodes",
     "manageModeHint": "Show add/delete controls on entries",
     "descHide": "Hide description",
     "descEdit": "Edit description",
