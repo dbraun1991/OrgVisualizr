@@ -222,7 +222,7 @@
                     </div>
                     <div class="editor-section">
                         <template x-for="entry in flatNodeList()" :key="getObjKey(entry.node)">
-                            <div class="card node-card" :id="'editor-node-' + entry.node.id" :style="`border-left-color: ${entry.node.color || '#4B5563'}; margin-left: ${entry.depth * 22}px;`" x-data="{ collapsed: entry.depth > 0 }">
+                            <div class="card node-card" :id="'editor-node-' + entry.node.id" :style="`border-left-color: ${entry.node.color || '#4B5563'}; margin-left: ${entry.depth * 22}px;`" x-data="{ collapsed: true }">
                                 <div class="node-header-row" @click="collapsed = !collapsed">
                                     <span class="node-depth-connector" x-show="entry.depth > 0">└</span>
                                     <strong x-text="entry.node.name || $store.i18n.t('editor.newNode')" class="node-title"></strong>

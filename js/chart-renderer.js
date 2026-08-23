@@ -61,6 +61,26 @@ export class ChartRenderer {
     }
 
     /**
+     * Nudges each already-rendered text element in `selection` so its actual glyph
+     * bounding box (not its nominal em-box) is vertically centered on `targetCy`.
+     * `dy="0.35em"` (set by the caller before this runs) gets a font's *approximate*
+     * center — how close depends on that font's specific metrics, which is why avatar
+     * initials/badge digits could still look slightly off-center on some fonts even
+     * with it applied. Measuring the real rendered bbox and correcting for it removes
+     * that font-dependence entirely.
+     * @param {d3.Selection} selection - Already-appended, already-texted text elements.
+     * @param {number|function} targetCy - The Y each element's glyph box should center on.
+     */
+    _verticallyCenterText(selection, targetCy) {
+        selection.each(function (d) {
+            const cy = typeof targetCy === 'function' ? targetCy(d) : targetCy;
+            const bbox = this.getBBox();
+            const delta = cy - (bbox.y + bbox.height / 2);
+            if (delta) this.setAttribute('y', parseFloat(this.getAttribute('y')) + delta);
+        });
+    }
+
+    /**
      * @param {Object} layout - Output of LayoutEngine.calculate().
      */
     render(layout) {
@@ -179,11 +199,14 @@ export class ChartRenderer {
             // the alphabetic baseline math every renderer supports. dominant-baseline:
             // central would do the same in a browser, but svg2pdf.js (PDF export) doesn't
             // support it and silently falls back to the alphabetic baseline, offsetting
-            // the text — this approach renders identically everywhere instead.
+            // the text — this approach renders identically everywhere instead. 0.35em is
+            // only an approximation of a font's true vertical center though, so it's
+            // followed by a measured pixel-exact correction below.
             .attr('dy', '0.35em')
             .attr('text-anchor', 'middle')
             .attr('fill', (o) => getContrastTextColor(o.occupant.color || '#4B5563'))
-            .text((o) => getInitials(o.occupant.name));
+            .text((o) => getInitials(o.occupant.name))
+            .call(this._verticallyCenterText, config.cardHeight / 2);
 
         occupantGroups.append('text')
             .attr('class', 'org-card-name')
@@ -219,11 +242,13 @@ export class ChartRenderer {
             .attr('x', (d) => this._clusterWidth(d.data, config) - 14)
             .attr('y', 14)
             // See the org-card-initials text above for why dy="0.35em" is used instead
-            // of dominant-baseline: central here.
+            // of dominant-baseline: central here, and why it's followed by a measured
+            // correction.
             .attr('dy', '0.35em')
             .attr('text-anchor', 'middle')
             .attr('fill', (d) => getContrastTextColor(d.data.color || '#4B5563'))
-            .text((d) => `+${d.hiddenCount}`);
+            .text((d) => `+${d.hiddenCount}`)
+            .call(this._verticallyCenterText, 14);
 
         occupantGroups
             .on('mouseenter', function (event, o) {
