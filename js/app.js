@@ -69,7 +69,7 @@ class App {
             let nextObjKey = 1;
 
             Alpine.data('orgVisualizrApp', () => ({
-                editorVisible: false,
+                editorVisible: true,
                 activeTab: 'visual',
                 theme: 'dark',
                 hideLeaves: false,
