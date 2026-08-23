@@ -29,75 +29,26 @@ Then open `http://localhost:8000`.
 - **Manage mode** — a switch next to "Hide leaves" reveals the add/delete controls on each entry in the sidebar; off by default so browsing and editing existing fields isn't cluttered with structural-edit buttons.
 - **Local save/load, with a proper manager** — named charts saved to browser `localStorage`; the header's "Files" button opens a modal listing every saved chart with load and delete actions.
 - **Import** — from a local JSON file (picker or drag-and-drop) or a remote HTTPS/HTTP URL.
-- **Export** — as JSON, SVG, PNG, or PDF.
+- **Export** — as JSON, SVG, PNG, PDF, or a nested-list Text/Markdown summary.
 - **Share links** — compress the entire chart into a URL (`?data=...`) via LZ-string; open the link anywhere to reproduce the same chart, no server involved.
 - **Light and dark themes** — toggle in the header; persisted per-browser, applied before first paint (no flash).
-- **Localization** — English and German, with more languages easy to add (see below).
+- **Localization** — English and German, with more languages easy to add.
 
-## Data Model / DSL
+## Documentation
 
-The JSON *is* the DSL — there's no separate custom syntax to learn. A chart is a `meta` object plus a flat `nodes[]` list, where each node points at its manager via `parentId`. Exactly one node must have `parentId: null` (the root):
+This README covers the essentials for using the app. For everything else:
 
-```json
-{
-  "meta": { "title": "Acme Corp", "organization": "Acme Corp" },
-  "nodes": [
-    { "id": "ceo", "parentId": null, "name": "Jane Doe", "title": "CEO", "department": "Executive", "color": "#0064B0" },
-    { "id": "cto", "parentId": "ceo", "name": "John Roe", "title": "CTO", "department": "Technology", "color": "#00A0E2", "description": "Leads engineering, product, and infrastructure." },
-    { "id": "eng-mgr", "parentId": "cto", "name": "Alex Kim", "title": "Engineering Manager", "department": "Technology", "collapsed": false }
-  ]
-}
-```
+- **[docs/dsl.md](docs/dsl.md)** — the full data model / DSL reference: every field, validation rule, and worked examples (minimal chart, co-leadership, staff placement, collapsed subtrees).
+- **[agents.md](agents.md)** — architecture, module responsibilities, key files, and how the pieces fit together. Written for anyone (human or AI agent) working on the codebase itself.
+- **[docs/adrs/](docs/adrs)** — Architecture Decision Records, one per significant design decision, kept up to date as the reasoning behind them evolves:
 
-Per-node fields:
-
-| Field | Required | Description |
-|---|---|---|
-| `id` | yes | Unique identifier. |
-| `parentId` | yes | The manager's `id`, or `null` for the single root. |
-| `name` | recommended | Display name. |
-| `title` | no | Role / job title. |
-| `department` | no | Shown under the title; also used for the accent color if `color` is unset. |
-| `color` | no | Hex color for the card's accent bar and avatar. |
-| `description` | no | Markdown text, shown in the hover tooltip. |
-| `collapsed` | no | If `true`, this node's subtree is hidden in the chart (shown as a "+N" badge). |
-| `coOccupants` | no | Array of `{ name, title, color, description }` for anyone else jointly holding this exact position (co-leads, job-sharing). The node's own `name`/`title` stay the primary occupant. |
-| `placement` | no | `"line"` (default) or `"staff"`. A `"staff"` node renders beside its parent with a dashed connector instead of below it in the normal row, and cannot itself have children. |
-
-This flat `parentId` shape maps directly onto D3's own `d3.stratify()` utility, so the layout engine needs no custom tree-building code — see `docs/adrs/ADR-002-data-model-and-dsl.md` for the full rationale.
-
-This is a **strict tree**: each position has exactly one incoming `parentId` edge. Co-leadership and staff placement (see `docs/adrs/ADR-004-co-occupancy-and-staff-placement.md`) are both modeled as attributes on top of that single edge, not as extra edges — so the tree itself stays simple even though a position can now be held by more than one person or drawn off to the side.
-
-Example with both:
-```json
-{ "id": "eng-mgr", "parentId": "cto", "name": "Alex Kim", "title": "Engineering Manager",
-  "coOccupants": [ { "name": "Noah Bergmann", "title": "Co-Engineering Manager" } ] },
-{ "id": "ea", "parentId": "ceo", "name": "Lena Roth", "title": "Executive Assistant", "placement": "staff" }
-```
-
-## Export Options
-
-- **JSON** — the raw data model, re-importable.
-- **SVG** — the exact current chart view, sanitized for safe standalone use.
-- **PNG** — high-resolution raster render of the current view.
-- **PDF** — vector PDF sized to the chart's dimensions.
-- **Text** — a nested Markdown bullet list of the whole hierarchy (name, role, department, staff notes, descriptions), for pasting into docs or reading without the app.
-
-## Contributing: How to Add a New Language
-
-1. Duplicate `locales/en/` to `locales/<code>/` (e.g. `locales/fr/`) and translate the values in `translation.json` — leave the keys unchanged.
-2. Add an `<option>` for the new language code in the language `<select>` in `index.html`.
-3. Run the app locally and switch to the new language to verify it loads.
-
-## Architecture Decisions
-
-| ADR | Decision |
-|-----|----------|
-| [ADR-001](docs/adrs/ADR-001-tech-stack.md) | Vanilla JS + D3.js + Alpine.js, no backend, no build step |
-| [ADR-002](docs/adrs/ADR-002-data-model-and-dsl.md) | Flat `nodes[]` with `parentId` (strict tree); JSON is the DSL |
-| [ADR-003](docs/adrs/ADR-003-persistence-and-sharing.md) | `localStorage` + JSON export + LZ-string share links, no backend |
-| [ADR-004](docs/adrs/ADR-004-co-occupancy-and-staff-placement.md) | Co-leadership (`coOccupants`) and staff placement (`placement`) as attributes on the strict tree, not new edge types |
-| [ADR-005](docs/adrs/ADR-005-editor-guardrails-and-view-controls.md) | Delete only when childless; "Hide leaves" as view-only state, not data; saved charts deletable via the Files modal; add/delete entry controls gated behind a "Manage" switch |
+  | ADR | Decision |
+  |-----|----------|
+  | [ADR-001](docs/adrs/ADR-001-tech-stack.md) | Vanilla JS + D3.js + Alpine.js, no backend, no build step |
+  | [ADR-002](docs/adrs/ADR-002-data-model-and-dsl.md) | Flat `nodes[]` with `parentId` (strict tree); JSON is the DSL |
+  | [ADR-003](docs/adrs/ADR-003-persistence-and-sharing.md) | `localStorage` + JSON export + LZ-string share links, no backend |
+  | [ADR-004](docs/adrs/ADR-004-co-occupancy-and-staff-placement.md) | Co-leadership (`coOccupants`) and staff placement (`placement`) as attributes on the strict tree, not new edge types |
+  | [ADR-005](docs/adrs/ADR-005-editor-guardrails-and-view-controls.md) | Delete only when childless; "Hide leaves"/"Manage" as view-only state, not data; saved charts deletable via the Files modal |
 
 ## License
 
