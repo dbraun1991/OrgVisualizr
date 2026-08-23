@@ -124,11 +124,7 @@ class App {
                     this.parseUrlParams();
 
                     let loaded = false;
-                    if (this._urlHadData) {
-                        this.updateFromJson();
-                        loaded = true;
-                    }
-                    if (!loaded && this._urlSource) {
+                    if (this._urlSource) {
                         loaded = await this.loadFromRemoteSource(this._urlSource);
                     }
                     if (!loaded) {

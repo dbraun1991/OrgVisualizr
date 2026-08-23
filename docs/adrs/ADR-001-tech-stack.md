@@ -14,7 +14,7 @@ An org chart is fundamentally simpler than either reference: it's a static tree 
 
 ## Decision
 
-**Vanilla JavaScript (ES6 modules) + D3.js + Alpine.js, no backend, no build step.** Runtime dependencies (D3, Alpine, i18next + backend/detector plugins, lz-string, DOMPurify, marked.js, jsPDF, svg2pdf.js) are loaded from CDN, mirroring Metroviz's dependency list almost exactly.
+**Vanilla JavaScript (ES6 modules) + D3.js + Alpine.js, no backend, no build step.** Runtime dependencies (D3, Alpine, i18next + backend/detector plugins, DOMPurify, marked.js, jsPDF, svg2pdf.js) are loaded from CDN, mirroring Metroviz's dependency list almost exactly. (`lz-string` was an original dependency for share-link compression; it was dropped when share links were removed — see [ADR-003's update](ADR-003-persistence-and-sharing.md#update--2026-08-23-share-links-removed).)
 
 This was chosen directly because Metroviz already proves the pattern works well for this class of app: no build tooling to maintain, trivial to host (any static file server, e.g. GitHub Pages), and the whole app is readable without a compilation step. A framework (React/Vue) was not considered — the app's complexity (a tree editor, an SVG renderer, some modals) does not need componentization or a virtual DOM to stay manageable.
 

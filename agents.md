@@ -6,7 +6,7 @@ A small, client-side web app for visualizing organizational charts. A chart is a
 
 ## Core Idea
 
-Everything runs in the browser. No backend, no build step, no database (ADR-001). `DataModel` validates/normalizes the chart JSON, `LayoutEngine` turns it into pixel coordinates via `d3.stratify()`/`d3.tree()`, and `ChartRenderer` draws the result as SVG. Alpine.js drives all UI state — the dual editor, modals, theme, view toggles. Persistence is `localStorage` plus JSON/SVG/PNG/PDF/Text export and an LZ-string-compressed share link (ADR-003) — no server involved at any point.
+Everything runs in the browser. No backend, no build step, no database (ADR-001). `DataModel` validates/normalizes the chart JSON, `LayoutEngine` turns it into pixel coordinates via `d3.stratify()`/`d3.tree()`, and `ChartRenderer` draws the result as SVG. Alpine.js drives all UI state — the dual editor, modals, theme, view toggles. Persistence is `localStorage` plus JSON/SVG/PNG/PDF/Text export (ADR-003) — no server involved at any point.
 
 ## Architecture
 
@@ -23,11 +23,11 @@ Browser
               ├── js/editor-actions.js — Visual-editor tree mutations
               ├── js/file-manager.js   — localStorage save/load/delete, export, remote import
               ├── js/text-export.js    — Markdown/text nested-list export
-              ├── js/url-state.js      — URL params + LZ-string share links
+              ├── js/url-state.js      — URL params (view state only)
               ├── js/dialog.js         — promise-based alert/confirm/prompt modals
               └── js/color-utils.js    — department palette, contrast-text, palette dropdown positioning
         ├── localStorage  — orgvisualizr_index, orgvisualizr_file_<name>, orgvisualizr_theme
-        └── URL params    — ?data= (share link), ?lang=, ?editor=, ?file=
+        └── URL params    — ?lang=, ?editor=, ?file=, ?source=
 
 No server. No build step. No database.
 ```
@@ -45,7 +45,7 @@ No server. No build step. No database.
 | `js/editor-actions.js` | Visual editor mutations — add/remove nodes and co-occupants, reparent, collapse, delete guardrail (ADR-005), recolor subtree |
 | `js/file-manager.js` | `localStorage` save/load/delete, JSON/SVG/PNG/PDF export, remote JSON import |
 | `js/text-export.js` | Markdown/text nested-list export |
-| `js/url-state.js` | URL parameter sync + LZ-string share link generation |
+| `js/url-state.js` | URL parameter sync (editor visibility, saved file, remote source) |
 | `js/dialog.js` | Promise-based alert/confirm/prompt modal system (used instead of native `confirm()`/`alert()`) |
 | `js/color-utils.js` | Department color palette, `getContrastTextColor()`, palette dropdown positioning |
 | `js/utils.js` | Shared helpers — HTML/SVG escaping & sanitizing, filename sanitizing, blob downloads |
@@ -60,7 +60,7 @@ See `docs/dsl.md` for the complete reference with examples. In short: JSON *is* 
 
 ## Persistence & Sharing (ADR-003)
 
-`localStorage` under two key patterns: `orgvisualizr_index` (array of saved chart names) and `orgvisualizr_file_<name>` (that chart's JSON). Export as JSON, SVG, PNG, PDF, or a Markdown/text nested list. Share links compress the entire chart JSON into a `?data=` URL parameter via LZ-string — opening the link reproduces the chart client-side, no server round-trip. `orgvisualizr_theme` (light/dark) is a separate, unrelated `localStorage` key.
+`localStorage` under two key patterns: `orgvisualizr_index` (array of saved chart names) and `orgvisualizr_file_<name>` (that chart's JSON). Export as JSON, SVG, PNG, PDF, or a Markdown/text nested list — that exported file is the only way to move a chart to another device or hand it to someone else; there is no compressed-URL share link (removed, see ADR-003's update). `orgvisualizr_theme` (light/dark) is a separate, unrelated `localStorage` key.
 
 ## Theming
 
@@ -88,7 +88,7 @@ To add a language:
 |-----|----------|
 | [ADR-001](docs/adrs/ADR-001-tech-stack.md) | Vanilla JS + D3.js + Alpine.js, no backend, no build step |
 | [ADR-002](docs/adrs/ADR-002-data-model-and-dsl.md) | Flat `nodes[]` with `parentId` (strict tree); JSON is the DSL |
-| [ADR-003](docs/adrs/ADR-003-persistence-and-sharing.md) | `localStorage` + JSON export + LZ-string share links, no backend |
+| [ADR-003](docs/adrs/ADR-003-persistence-and-sharing.md) | `localStorage` + JSON/SVG/PNG/PDF export, no backend (share links removed, see ADR update) |
 | [ADR-004](docs/adrs/ADR-004-co-occupancy-and-staff-placement.md) | Co-leadership (`coOccupants`) and staff placement (`placement`) as attributes on the strict tree, not new edge types |
 | [ADR-005](docs/adrs/ADR-005-editor-guardrails-and-view-controls.md) | Delete only when childless; "Hide leaves"/"Manage" as view-only state, not data; saved charts deletable via the Files modal |
 
@@ -96,6 +96,6 @@ To add a language:
 
 - No backend, no database — everything is client-side, in the browser that has the tab open.
 - No multi-user collaboration or real-time sync between viewers.
-- No authentication or access control — anyone with the file or a share link can view and edit.
+- No authentication or access control — anyone with the exported file can view and edit.
 - No cross-functional/dotted-line relations beyond `coOccupants` (joint position) and `placement: "staff"` (ADR-004) — this is not a general graph model.
 - Staff-placement nodes cannot have their own children in v1 (ADR-004) — lifting this is a known, deliberately deferred limitation.

@@ -34,7 +34,6 @@ Then open `http://localhost:8000`.
 - **Local save/load, with a proper manager** — named charts saved to browser `localStorage`; the header's "Files" button opens a modal listing every saved chart with load and delete actions.
 - **Import** — from a local JSON file (picker or drag-and-drop) or a remote HTTPS/HTTP URL.
 - **Export** — as JSON, SVG, PNG, PDF, or a nested-list Text/Markdown summary.
-- **Share links** — compress the entire chart into a URL (`?data=...`) via LZ-string; open the link anywhere to reproduce the same chart, no server involved.
 - **Light and dark themes** — toggle in the header; persisted per-browser, applied before first paint (no flash).
 - **Localization** — English and German, with more languages easy to add.
 
@@ -50,7 +49,7 @@ This README covers the essentials for using the app. For everything else:
   |-----|----------|
   | [ADR-001](docs/adrs/ADR-001-tech-stack.md) | Vanilla JS + D3.js + Alpine.js, no backend, no build step |
   | [ADR-002](docs/adrs/ADR-002-data-model-and-dsl.md) | Flat `nodes[]` with `parentId` (strict tree); JSON is the DSL |
-  | [ADR-003](docs/adrs/ADR-003-persistence-and-sharing.md) | `localStorage` + JSON export + LZ-string share links, no backend |
+  | [ADR-003](docs/adrs/ADR-003-persistence-and-sharing.md) | `localStorage` + JSON/SVG/PNG/PDF export, no backend (share links removed, see ADR update) |
   | [ADR-004](docs/adrs/ADR-004-co-occupancy-and-staff-placement.md) | Co-leadership (`coOccupants`) and staff placement (`placement`) as attributes on the strict tree, not new edge types |
   | [ADR-005](docs/adrs/ADR-005-editor-guardrails-and-view-controls.md) | Delete only when childless; "Hide leaves"/"Manage" as view-only state, not data; saved charts deletable via the Files modal |
 

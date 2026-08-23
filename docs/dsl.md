@@ -90,7 +90,7 @@ A staff node can still have `coOccupants` — the two features are orthogonal (e
 
 Two different things can make a subtree disappear from the chart, and only one of them is part of the DSL:
 
-- **`collapsed: true`** on a node is **persisted data** — part of the JSON, explicitly authored, saved/exported/shared along with everything else. It hides that specific node's descendants and shows a "+N" badge.
+- **`collapsed: true`** on a node is **persisted data** — part of the JSON, explicitly authored, saved/exported along with everything else. It hides that specific node's descendants and shows a "+N" badge.
 - **"Hide leaves"** (the sidebar switch) is **pure view state** — a boolean that lives only in the running app's UI state (`js/app.js`), never written into `data.nodes`, never appears in exported JSON. It globally hides every node with no reports of its own, crediting the count to that node's manager, reusing the exact same "+N" badge mechanism. Two people looking at the same exported chart JSON will always see the same `collapsed` state, but may have "Hide leaves" on or off independently — it's a personal viewing preference, not a property of the org chart itself.
 
 See [ADR-005](adrs/ADR-005-editor-guardrails-and-view-controls.md) for the full reasoning.

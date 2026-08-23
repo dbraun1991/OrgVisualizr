@@ -38,5 +38,5 @@ This is a **strict tree**: v1 deliberately does not support secondary/dotted-lin
 - Hand-editing the JSON tab is straightforward: adding a person is one object with a `parentId` pointing at their manager's `id`.
 - Reparenting (changing who someone reports to) is a single field change, in both the JSON tab and the Visual editor's "Reports to" dropdown.
 - Deleting a node that has direct reports requires an explicit decision (see `editor-actions.js` `removeNode`): reports are reassigned to the deleted node's own parent, after user confirmation. The root node cannot be deleted at all — a tree always needs exactly one root.
-- Because collapse state (`collapsed: true` per node) lives directly on the node object, it round-trips through save/export/share automatically — no separate URL-encoded state bitmask (like Metroviz's zone `zstate`) was needed.
+- Because collapse state (`collapsed: true` per node) lives directly on the node object, it round-trips through save/export automatically — no separate URL-encoded state bitmask (like Metroviz's zone `zstate`) was needed.
 - If cross-functional/dotted-line relations become a real requirement, this ADR should be revisited rather than silently extended.
