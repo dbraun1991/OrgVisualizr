@@ -5,6 +5,11 @@
  * node points at its parent via `parentId`. Exactly one node must have a
  * null/absent `parentId` (the root). This shape maps directly onto
  * d3.stratify(), so the layout engine needs no custom tree-building code.
+ *
+ * Each node represents one *position*, held by a primary occupant (the node's
+ * own name/title/etc) plus an optional `coOccupants[]` array for joint
+ * leadership, and carries a `placement` of "line" (default) or "staff" for
+ * beside-the-parent rendering. See ADR-004.
  */
 export class DataModel {
     constructor() {}
@@ -38,7 +43,9 @@ export class DataModel {
         const nodes = data.nodes.map((n) => ({
             ...n,
             id: String(n.id),
-            parentId: n.parentId === undefined || n.parentId === null || n.parentId === '' ? null : String(n.parentId)
+            parentId: n.parentId === undefined || n.parentId === null || n.parentId === '' ? null : String(n.parentId),
+            placement: n.placement === 'staff' ? 'staff' : 'line',
+            coOccupants: Array.isArray(n.coOccupants) ? n.coOccupants : []
         }));
 
         const idSet = new Set();
@@ -47,6 +54,15 @@ export class DataModel {
                 throw new Error(`Invalid data format: duplicate node id "${n.id}"`);
             }
             idSet.add(n.id);
+
+            n.coOccupants.forEach((co, i) => {
+                if (!co || typeof co !== 'object' || !co.name) {
+                    throw new Error(`Invalid data format: node "${n.id}" has a coOccupants entry at index ${i} without a name`);
+                }
+                if ('id' in co || 'parentId' in co) {
+                    throw new Error(`Invalid data format: node "${n.id}" coOccupants entry "${co.name}" may not have its own id/parentId — co-occupants are not independent tree nodes (see ADR-004)`);
+                }
+            });
         });
 
         const roots = nodes.filter((n) => n.parentId === null);
@@ -64,6 +80,7 @@ export class DataModel {
         });
 
         this._assertNoCycles(nodes);
+        this._assertStaffHasNoChildren(nodes);
 
         return {
             meta: data.meta || {},
@@ -89,6 +106,22 @@ export class DataModel {
                 seen.add(current.id);
                 current = byId.get(current.parentId);
                 if (!current) break;
+            }
+        });
+    }
+
+    /**
+     * A "staff" placement node is laid out beside its parent, entirely outside the
+     * main tree pass (see ADR-004) — it cannot itself have children in v1.
+     *
+     * @param {Array} nodes - Normalized flat node list.
+     */
+    _assertStaffHasNoChildren(nodes) {
+        const staffIds = new Set(nodes.filter((n) => n.placement === 'staff').map((n) => n.id));
+        if (staffIds.size === 0) return;
+        nodes.forEach((n) => {
+            if (n.parentId !== null && staffIds.has(n.parentId)) {
+                throw new Error(`Invalid data format: node "${n.id}" reports to "${n.parentId}", which is a staff-placement node — staff positions cannot have their own reports in v1 (see ADR-004)`);
             }
         });
     }

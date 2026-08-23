@@ -89,12 +89,13 @@ export const editorActions = {
     },
 
     /**
-     * Returns all nodes eligible as a new parent for `node` (excludes itself and its descendants).
+     * Returns all nodes eligible as a new parent for `node` (excludes itself, its
+     * descendants, and staff-placement nodes, which cannot have children — ADR-004).
      * @param {Object} node - The node being reparented.
      * @returns {Array} Eligible parent node objects.
      */
     getEligibleParents(node) {
-        return this.data.nodes.filter((n) => !this.isSelfOrDescendant(node.id, n.id));
+        return this.data.nodes.filter((n) => n.placement !== 'staff' && !this.isSelfOrDescendant(node.id, n.id));
     },
 
     /**
@@ -147,6 +148,54 @@ export const editorActions = {
             color: this.deptPalette[0]
         });
         this.scrollVisualEditorItemToView('editor-node-' + id);
+    },
+
+    /**
+     * Adds a co-occupant (joint holder of the same position) to a node — see ADR-004.
+     * @param {Object} node - The position to add a co-occupant to.
+     */
+    addCoOccupant(node) {
+        if (!node.coOccupants) node.coOccupants = [];
+        node.coOccupants.push({
+            name: i18next.t('js.defaultNewNodeName'),
+            title: '',
+            color: node.color || this.deptPalette[0]
+        });
+    },
+
+    /**
+     * Removes a co-occupant from a position.
+     * @param {Object} node - The position to remove a co-occupant from.
+     * @param {number} index - Index within node.coOccupants.
+     */
+    removeCoOccupant(node, index) {
+        if (!node.coOccupants) return;
+        node.coOccupants.splice(index, 1);
+    },
+
+    /**
+     * A "staff" placement node cannot itself have children in v1 (ADR-004) — used to
+     * disable that option in the editor for a node that currently has direct reports.
+     * @param {Object} node - The node to check.
+     * @returns {boolean}
+     */
+    canSetStaffPlacement(node) {
+        return this.getChildren(node.id).length === 0;
+    },
+
+    /**
+     * Sets a node's placement ("line" or "staff"), guarding the staff-has-no-children
+     * rule from ADR-004 with a clear message instead of a silent validation failure
+     * surfacing later in the JSON tab.
+     * @param {Object} node - The node to update.
+     * @param {string} value - "line" or "staff".
+     */
+    async setPlacement(node, value) {
+        if (value === 'staff' && !this.canSetStaffPlacement(node)) {
+            await this.dialogAlert(i18next.t('js.staffNeedsNoChildren'), i18next.t('js.errorTitle'));
+            return;
+        }
+        node.placement = value;
     },
 
     /**

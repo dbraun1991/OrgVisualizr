@@ -5,12 +5,14 @@
   },
   "nodes": [
     { "id": "ceo", "parentId": null, "name": "Jane Doe", "title": "CEO", "department": "Executive", "color": "#0064B0", "description": "Founder & CEO. Final decision authority on company strategy." },
+    { "id": "ea", "parentId": "ceo", "name": "Lena Roth", "title": "Executive Assistant", "department": "Executive", "color": "#0064B0", "placement": "staff", "description": "Staff position: supports the CEO directly, not part of the reporting line." },
 
     { "id": "cto", "parentId": "ceo", "name": "John Roe", "title": "CTO", "department": "Technology", "color": "#00A0E2", "description": "Leads engineering, product, and infrastructure." },
     { "id": "cfo", "parentId": "ceo", "name": "Maria Lopez", "title": "CFO", "department": "Finance", "color": "#66C028" },
     { "id": "cmo", "parentId": "ceo", "name": "Sam Patel", "title": "CMO", "department": "Marketing", "color": "#EE7623" },
 
-    { "id": "eng-mgr", "parentId": "cto", "name": "Alex Kim", "title": "Engineering Manager", "department": "Technology", "color": "#00A0E2" },
+    { "id": "eng-mgr", "parentId": "cto", "name": "Alex Kim", "title": "Engineering Manager", "department": "Technology", "color": "#00A0E2",
+      "coOccupants": [ { "name": "Noah Bergmann", "title": "Co-Engineering Manager", "color": "#00A0E2", "description": "Job-shares engineering leadership with Alex Kim." } ] },
     { "id": "prod-mgr", "parentId": "cto", "name": "Priya Nair", "title": "Product Manager", "department": "Technology", "color": "#00A0E2" },
     { "id": "it-mgr", "parentId": "cto", "name": "Tom Becker", "title": "IT Manager", "department": "Technology", "color": "#00A0E2", "collapsed": true },
 

@@ -237,11 +237,55 @@
                                         </div>
                                     </div>
                                     <div class="form-row">
-                                        <div class="form-group checkbox-group">
+                                        <div class="form-group flex-1">
+                                            <label x-text="$store.i18n.t('editor.placement')">Placement</label>
+                                            <select :value="entry.node.placement || 'line'" @change="setPlacement(entry.node, $event.target.value)">
+                                                <option value="line" x-text="$store.i18n.t('editor.placementLine')">Line</option>
+                                                <option value="staff" :disabled="!canSetStaffPlacement(entry.node)" x-text="$store.i18n.t('editor.placementStaff')">Staff</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group checkbox-group flex-1">
                                             <input type="checkbox" x-model="entry.node.collapsed" :id="'collapse-' + entry.node.id" class="w-auto">
                                             <label :for="'collapse-' + entry.node.id" class="checkbox-label" x-text="$store.i18n.t('editor.collapseInChart')">Collapse subtree in chart</label>
                                         </div>
                                     </div>
+
+                                    <div class="co-occupants-section">
+                                        <div class="section-header-top">
+                                            <h4 x-text="$store.i18n.t('editor.coOccupantsTitle')">Co-Leads</h4>
+                                            <button class="btn-small" @click="addCoOccupant(entry.node)" x-text="$store.i18n.t('editor.addCoOccupant')">+ Co-Lead</button>
+                                        </div>
+                                        <template x-for="(co, coIdx) in (entry.node.coOccupants || [])" :key="coIdx">
+                                            <div class="card co-occupant-card">
+                                                <div class="form-row">
+                                                    <div class="form-group flex-2">
+                                                        <label x-text="$store.i18n.t('editor.name')">Name</label>
+                                                        <input type="text" x-model="co.name">
+                                                    </div>
+                                                    <div class="form-group flex-2">
+                                                        <label x-text="$store.i18n.t('editor.role')">Role / Title</label>
+                                                        <input type="text" x-model="co.title">
+                                                    </div>
+                                                    <div class="form-group metro-color-field" x-data="{ paletteOpen: false }" @click.outside="paletteOpen = false">
+                                                        <label x-text="$store.i18n.t('editor.color')">Color</label>
+                                                        <button type="button" x-ref="paletteTrigger" class="metro-color-trigger" :style="'background-color:' + (co.color || '#4B5563')" @click.stop="paletteOpen = !paletteOpen; if (paletteOpen) $nextTick(() => $nextTick(() => window.orgvisualizrPositionPalette($refs.paletteTrigger, $refs.paletteMenu)))" :aria-expanded="paletteOpen" :title="$store.i18n.t('editor.chooseColor')"></button>
+                                                        <div class="metro-palette-dropdown" x-ref="paletteMenu" x-show="paletteOpen" x-cloak @click.stop role="group">
+                                                            <div class="metro-palette metro-palette--compact">
+                                                                <template x-for="c in deptPalette" :key="c">
+                                                                    <button type="button" class="metro-swatch metro-swatch--compact" :style="'background-color:' + c" :title="c" :class="{ 'metro-swatch--active': paletteColorsEqual(co.color, c) }" @click="co.color = c; paletteOpen = false"></button>
+                                                                </template>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group" style="flex: none;">
+                                                        <label>&nbsp;</label>
+                                                        <button class="btn-icon btn-danger" @click="removeCoOccupant(entry.node, coIdx)" :title="$store.i18n.t('editor.delete')">✕</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+
                                     <div class="form-row mt-2" x-data="{ showDesc: !!entry.node.description }">
                                         <div class="w-100">
                                             <button class="btn-small btn-desc-toggle" @click="showDesc = !showDesc" x-text="showDesc ? $store.i18n.t('editor.descHide') : (entry.node.description ? $store.i18n.t('editor.descEdit') : $store.i18n.t('editor.descAdd'))"></button>

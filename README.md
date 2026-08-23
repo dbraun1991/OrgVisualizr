@@ -19,6 +19,8 @@ Then open `http://localhost:8000`.
 - **Visual + JSON dual editor** — edit via forms, or edit the raw JSON directly; changes in either one instantly re-render the chart and stay synchronized with the other.
 - **Modern card-based rendering** — D3.js-rendered SVG cards (name, role, department, department-color accent, initials avatar) connected with clean orthogonal connectors, pan/zoom enabled.
 - **Collapsible subtrees** — click any node with reports to collapse/expand its branch; shows a "+N" badge for hidden descendants.
+- **Co-leadership** — a position can be jointly held by multiple people (co-leads, job-sharing), rendered as a card cluster.
+- **Staff placement** — assistant/support roles can render beside their manager with a dashed connector instead of stacked below, matching the classic line-vs-staff org-chart convention.
 - **Local save/load** — named charts saved to browser `localStorage`.
 - **Import** — from a local JSON file (picker or drag-and-drop) or a remote HTTPS/HTTP URL.
 - **Export** — as JSON, SVG, PNG, or PDF.
@@ -52,10 +54,19 @@ Per-node fields:
 | `color` | no | Hex color for the card's accent bar and avatar. |
 | `description` | no | Markdown text, shown in the hover tooltip. |
 | `collapsed` | no | If `true`, this node's subtree is hidden in the chart (shown as a "+N" badge). |
+| `coOccupants` | no | Array of `{ name, title, color, description }` for anyone else jointly holding this exact position (co-leads, job-sharing). The node's own `name`/`title` stay the primary occupant. |
+| `placement` | no | `"line"` (default) or `"staff"`. A `"staff"` node renders beside its parent with a dashed connector instead of below it in the normal row, and cannot itself have children. |
 
 This flat `parentId` shape maps directly onto D3's own `d3.stratify()` utility, so the layout engine needs no custom tree-building code — see `docs/adrs/ADR-002-data-model-and-dsl.md` for the full rationale.
 
-This is a **strict tree**: each person has exactly one manager. Cross-functional / dotted-line relationships are not modeled in v1.
+This is a **strict tree**: each position has exactly one incoming `parentId` edge. Co-leadership and staff placement (see `docs/adrs/ADR-004-co-occupancy-and-staff-placement.md`) are both modeled as attributes on top of that single edge, not as extra edges — so the tree itself stays simple even though a position can now be held by more than one person or drawn off to the side.
+
+Example with both:
+```json
+{ "id": "eng-mgr", "parentId": "cto", "name": "Alex Kim", "title": "Engineering Manager",
+  "coOccupants": [ { "name": "Noah Bergmann", "title": "Co-Engineering Manager" } ] },
+{ "id": "ea", "parentId": "ceo", "name": "Lena Roth", "title": "Executive Assistant", "placement": "staff" }
+```
 
 ## Export Options
 
@@ -77,6 +88,7 @@ This is a **strict tree**: each person has exactly one manager. Cross-functional
 | [ADR-001](docs/adrs/ADR-001-tech-stack.md) | Vanilla JS + D3.js + Alpine.js, no backend, no build step |
 | [ADR-002](docs/adrs/ADR-002-data-model-and-dsl.md) | Flat `nodes[]` with `parentId` (strict tree); JSON is the DSL |
 | [ADR-003](docs/adrs/ADR-003-persistence-and-sharing.md) | `localStorage` + JSON export + LZ-string share links, no backend |
+| [ADR-004](docs/adrs/ADR-004-co-occupancy-and-staff-placement.md) | Co-leadership (`coOccupants`) and staff placement (`placement`) as attributes on the strict tree, not new edge types |
 
 ## License
 

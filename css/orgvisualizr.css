@@ -141,6 +141,14 @@ main {
     stroke-width: 2px;
 }
 
+/* Staff placement (ADR-004): dashed to read as support/staff authority, not a
+   normal reporting line. */
+.org-link--staff {
+    stroke: #777;
+    stroke-width: 1.5px;
+    stroke-dasharray: 5 4;
+}
+
 .org-card {
     fill: var(--card-bg);
     stroke: #3a3a3a;
@@ -148,6 +156,8 @@ main {
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
 }
 .org-node:hover .org-card { fill: var(--card-bg-hover); stroke: #555; }
+
+.org-node--staff .org-card { stroke-dasharray: 4 3; }
 
 .org-card-avatar { opacity: 0.9; }
 .org-card-initials {
@@ -295,6 +305,18 @@ main {
 .node-title-role { color: var(--text-muted); font-size: 0.8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .node-actions { margin-left: auto; display: flex; align-items: center; gap: 0.3rem; }
 .node-content { padding: 0.7rem; border-top: 1px solid var(--border-color); }
+
+.co-occupants-section { margin: 0.6rem 0; }
+.co-occupants-section h4 {
+    margin: 0;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+.co-occupant-card { padding: 0.5rem 0.6rem; margin-bottom: 0.4rem; border-left-color: var(--border-color); }
+.co-occupant-card:last-child { margin-bottom: 0; }
 
 .collapse-icon { font-size: 0.65rem; color: var(--text-muted); }
 
