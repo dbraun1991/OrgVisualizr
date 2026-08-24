@@ -68,3 +68,7 @@ A second, structural gap: the staff card's horizontal position was computed inde
 - **Multiple staff on one manager**: now explicitly supported — they stack left-to-right beside the parent, each with its own connector back to the parent, using the same reserved-width mechanism.
 
 This required grouping staff nodes by `parentId` before the `d3.tree()` call (so `separation()` can look up how much width a node's staff row needs) rather than after, which is why the staff-positioning step in `layout-engine.js` moved from a flat `.map()` over all staff nodes to a per-parent stacking loop.
+
+## Update — 2026-08-24: staff overhang could inflate the computed canvas width
+
+A related bug, in the same area of `layout-engine.js` but a step later than the geometry above: `calculate()`'s final `width` folds a staff card's right edge into the tree's own `maxX` to make sure an overhanging staff card is still inside the returned canvas bounds — but it compared the staff card's already-shifted (final-space) position directly against `maxX`, which was still in d3.tree()'s original pre-shift space. When a staff card's shifted right edge exceeded that pre-shift `maxX`, the resulting `width` came out inflated by the shift amount — real dead space on the right of the rendered/exported canvas, not merely a rounding difference. See [ADR-005](ADR-005-editor-guardrails-and-view-controls.md)'s 2026-08-24 update for the fix and how it was found (verifying the pan/zoom re-centering feature's assumption that `layout.config.width`/`height` tightly bound the tree's real edges).

@@ -166,9 +166,19 @@ export class LayoutEngine {
         });
 
         const offsetX = margins.left - minX;
+        // `d.y` is a row's vertical *center* (see the render()/link-drawing code,
+        // which always offsets by ±cardHeight/2 from it) — so shifting the
+        // topmost row's center to exactly `margins.top` leaves only
+        // `margins.top - cardHeight/2` of actual clearance above its card's top
+        // edge, not a full `margins.top` margin. Shifting to
+        // `margins.top + cardHeight/2` instead puts that top edge at exactly
+        // `margins.top`, matching what `height` below already assumes for the
+        // bottom edge (and matching how the X axis works out exactly via
+        // `offsetX`/`margins.left` above).
+        const offsetY = margins.top + cardHeight / 2;
         hierarchyRoot.each((d) => {
             d.x += offsetX;
-            d.y += margins.top;
+            d.y += offsetY;
             d.hiddenCount = hiddenDescendantCount.get(d.id) || 0;
         });
 
@@ -181,7 +191,7 @@ export class LayoutEngine {
             const parent = byHierarchyId.get(parentId);
             const parentHalfWidth = parent ? this.clusterWidth(parent.data) / 2 : 0;
             const parentX = parent ? parent.x : margins.left;
-            const parentY = parent ? parent.y : margins.top;
+            const parentY = parent ? parent.y : offsetY;
 
             let cursorX = parentX + parentHalfWidth + staffGapX;
             staffKids.forEach((n) => {
@@ -194,12 +204,24 @@ export class LayoutEngine {
             });
         });
 
+        // `maxX` above is still in d3.tree()'s original, pre-shift coordinate
+        // space, but staff nodes are positioned from already-*shifted* parent
+        // coordinates (`byHierarchyId` was built after the `d.x += offsetX`
+        // loop) — so a staff card's own right edge lives in the *final* space.
+        // Comparing/folding the two directly used to mix spaces silently: since
+        // final-space coordinates run `offsetX` higher than pre-shift ones, a
+        // staff card overhang could inflate `maxX` (and so the returned
+        // `width`) by that same `offsetX` — real dead space on the right edge
+        // of every export/render, not just a rounding error. Converting the
+        // tree's own right edge into final space first keeps both sides of the
+        // comparison below in the same coordinate system.
+        let maxXFinal = maxX + offsetX;
         staffNodes.forEach((s) => {
             const right = s.x + this.clusterWidth(s.data) / 2;
-            if (right > maxX) maxX = right;
+            if (right > maxXFinal) maxXFinal = right;
         });
 
-        const width = (maxX - minX) + margins.left + margins.right;
+        const width = maxXFinal + margins.right;
         const height = maxY + cardHeight + margins.top + margins.bottom;
 
         return {
