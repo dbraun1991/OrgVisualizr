@@ -146,7 +146,10 @@ class App {
 
                     this.$watch('editorVisible', () => this.updateUrlParams());
                     this.$watch('currentFileName', () => this.updateUrlParams());
-                    this.$watch('hideLeaves', () => this.renderChart(this.data));
+                    // Same zoom level, but re-centered on the (now differently-sized)
+                    // tree, rather than keeping the exact old pan offset — see
+                    // ChartRenderer._resolveTransform() for why.
+                    this.$watch('hideLeaves', () => this.renderChart(this.data, { centerZoom: true }));
                     // Tree and Sections are different coordinate spaces (different
                     // content shape, different sizing) — carrying over a pan/zoom
                     // from one to the other wouldn't land anywhere meaningful, unlike
@@ -251,10 +254,14 @@ class App {
                  * @param {Object} [options] - Passed through to the renderer.
                  * @param {boolean} [options.resetZoom] - See ChartRenderer.render()/
                  *   .renderSections(). Omitted (the common case — any data edit, a
-                 *   hideLeaves toggle, a language change) preserves the current pan/zoom
-                 *   across the rebuild; pass `true` only when the chart being drawn is
+                 *   language change) preserves the current pan/zoom across the rebuild
+                 *   exactly as-is; pass `true` only when the chart being drawn is
                  *   substantively a *different* one from what was on screen (switching
                  *   Tree/Sections, loading a different/new/imported chart).
+                 * @param {boolean} [options.centerZoom] - Keep the current zoom level
+                 *   but re-center on the newly rendered layout instead of keeping the
+                 *   exact old pan offset — used for the hideLeaves toggle, since hiding
+                 *   or showing leaves changes the diagram's own size.
                  */
                 renderChart(jsonData, options = {}) {
                     try {

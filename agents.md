@@ -86,7 +86,7 @@ To add a language:
 - A node can only be deleted once it has no reports at all, direct or indirect; every delete asks for confirmation.
 - "Hide leaves" and "Manage" (`hideLeaves`/`manageMode` in `app.js`) are pure client-side view state — never written into `data.nodes`, never present in exported/shared JSON. Two viewers of the same chart JSON can have either switch on or off independently.
 - Saved charts are deleted via the header's "Files" modal (`manageFilesModalOpen`), not the quick-switch `<select>`, which has no delete affordance.
-- Pan/zoom survives most re-renders (`ChartRenderer.render()`/`.renderSections()` take an `options.resetZoom` flag) — preserved by default for edits/hideLeaves/language changes, reset explicitly for viewMode switches and loading a different chart (New/Load/Import).
+- Pan/zoom survives most re-renders (`ChartRenderer.render()`/`.renderSections()` take `options.resetZoom`/`options.centerZoom`) — preserved exactly by default (edits, language changes), re-centered at the same zoom level for `hideLeaves` (the diagram's own size just changed), reset for viewMode switches and loading a different chart (New/Load/Import).
 
 ## Sections View (ADR-006)
 

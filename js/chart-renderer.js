@@ -66,15 +66,51 @@ export class ChartRenderer {
     }
 
     /**
+     * Works out the zoom transform the rebuilt SVG should start from — see
+     * setupZoom() for why a rebuild needs this reseeded at all rather than just
+     * carrying over.
+     * - `options.resetZoom`: null — start fresh at identity (a genuinely
+     *   different chart/view, not a reshaping of the current one).
+     * - `options.centerZoom`: same zoom *level* as right now, but re-centered on
+     *   the new layout's own content-space center, rather than keeping the old
+     *   pan offset verbatim. Content-space (0,0)-(config.width,config.height) is
+     *   already what the SVG's `viewBox` maps to fill-and-center the container
+     *   at identity zoom, so re-centering on `(config.width/2, config.height/2)`
+     *   at the current scale keeps that same "whole diagram centered" framing
+     *   even though the diagram's own size just changed (e.g. toggling "Hide
+     *   leaves" shrinks or grows the tree) — reusing the raw old pan offset
+     *   instead would leave the new, differently-sized diagram off-center or
+     *   partly out of view.
+     * - Otherwise: the exact current transform, unchanged — the common case
+     *   (field edits, language changes) where the content's own shape isn't
+     *   changing, so there's nothing to re-center for.
+     * @param {Object} layout - The layout about to be rendered.
+     * @param {Object} options - This render's options (see render()).
+     * @returns {d3.ZoomTransform|null}
+     */
+    _resolveTransform(layout, options) {
+        if (options.resetZoom || !this.svgElement) return null;
+        const current = d3.zoomTransform(this.svgElement);
+        if (options.centerZoom && layout && layout.config) {
+            const cx = layout.config.width / 2;
+            const cy = layout.config.height / 2;
+            return d3.zoomIdentity.translate(cx, cy).scale(current.k).translate(-cx, -cy);
+        }
+        return current;
+    }
+
+    /**
      * @param {Object} layout - Output of LayoutEngine.calculate().
      * @param {Object} [options] - Render options.
      * @param {boolean} [options.resetZoom] - Discard the current pan/zoom instead of
-     *   carrying it over to the rebuilt SVG — see setupZoom() below for why a rebuild
-     *   needs this at all, and app.js's renderChart() for which triggers pass it.
+     *   carrying it over to the rebuilt SVG — see _resolveTransform() for the full
+     *   policy, and app.js's renderChart() for which triggers pass what.
+     * @param {boolean} [options.centerZoom] - Keep the current zoom level but
+     *   re-center on the new layout — see _resolveTransform().
      */
     render(layout, options = {}) {
         if (!this.container) return;
-        const previousTransform = (!options.resetZoom && this.svgElement) ? d3.zoomTransform(this.svgElement) : null;
+        const previousTransform = this._resolveTransform(layout, options);
         this.container.innerHTML = '';
         if (!layout || !layout.root) return;
 
@@ -274,12 +310,12 @@ export class ChartRenderer {
      * `this.svgElement`) keeps working unmodified regardless of which view is
      * currently on screen.
      * @param {Object} layout - Output of SectionsLayout.calculate().
-     * @param {Object} [options] - Render options — see render() above.
-     * @param {boolean} [options.resetZoom] - Discard the current pan/zoom.
+     * @param {Object} [options] - Render options — see render() and
+     *   _resolveTransform() above for the full resetZoom/centerZoom policy.
      */
     renderSections(layout, options = {}) {
         if (!this.container) return;
-        const previousTransform = (!options.resetZoom && this.svgElement) ? d3.zoomTransform(this.svgElement) : null;
+        const previousTransform = this._resolveTransform(layout, options);
         this.container.innerHTML = '';
         if (!layout || !layout.sections) return;
 
