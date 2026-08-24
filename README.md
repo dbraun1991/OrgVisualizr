@@ -36,7 +36,7 @@ Then open `http://localhost:8000`.
 - **Local save/load, with a proper manager** — named charts saved to browser `localStorage`; the header's "Files" button opens a modal listing every saved chart with load and delete actions.
 - **Import** — from a local JSON file (picker or drag-and-drop) or a remote HTTPS/HTTP URL.
 - **Export** — as JSON, SVG, PNG, PDF, or a nested-list Text/Markdown summary.
-- **Sections view** — a second, more abstract view (header toggle) that steps back from individuals: one box per department, with named sub-group boxes inside, sorted and indented by tier, colored by each section's own lead. Driven by an optional `group` field per node; shares "Hide leaves" with the tree view.
+- **Sections view** — a second, more abstract view (header toggle) that steps back from individuals: one box per department, with named sub-group boxes inside, sorted and indented by tier, outlined in each section's own lead's color. Driven by an optional `group` field per node; shares "Hide leaves" with the tree view.
 - **Light and dark themes** — toggle in the header; persisted per-browser, applied before first paint (no flash).
 - **Localization** — English and German, with more languages easy to add.
 

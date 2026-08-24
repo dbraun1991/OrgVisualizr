@@ -1,5 +1,3 @@
-import { getContrastTextColor } from './color-utils.js';
-
 /**
  * Computes box positions for the "Sections" view — an abstraction over the org
  * tree that groups *everyone* (subject to the same `hideLeaves` option the tree
@@ -21,11 +19,10 @@ import { getContrastTextColor } from './color-utils.js';
  *   its own, above every other section, with a connector line down to each of
  *   them — it's structurally "the top" of the org, so it reads that way here
  *   too, not just alphabetically first.
- * - Each section's box color is its own section lead's color — the shallowest
- *   (lowest-depth) person found in that section — with the rest of the box's
- *   text/strokes switching to whichever of black/white contrasts against it
- *   (`getContrastTextColor`, the same helper the avatar initials/badges use),
- *   since a section's color is arbitrary per-chart data, not a themed default.
+ * - Each section box's *outline* is its own section lead's color — the
+ *   shallowest (lowest-depth) person found in that section — while the fill
+ *   and every other text/stroke inside stays the normal themed neutral, same
+ *   as the rest of the app. The color is an accent border, not a background.
  */
 export class SectionsLayout {
     constructor() {
@@ -113,18 +110,15 @@ export class SectionsLayout {
 
         const sectionHeight = y + sectionPadding;
 
-        // The section's own color is its shallowest person's color — whoever is
-        // closest to the root within this section — with everything else in the
-        // box switching to whichever text color contrasts against it.
+        // The section's own accent color is its shallowest person's color —
+        // whoever is closest to the root within this section — used only as the
+        // box's outline; everything drawn inside stays the normal themed neutral.
         const sectionLead = rows.reduce((min, r) => (min === null || r.depth < min.depth ? r : min), null);
         const sectionColor = (sectionLead && sectionLead.node.color) || '#4B5563';
-        const sectionTextColor = getContrastTextColor(sectionColor);
-        rows.forEach((r) => { r.textColor = sectionTextColor; });
-        groupBoxes.forEach((g) => { g.textColor = sectionTextColor; });
 
         return {
             id: deptName, name: deptName, width: sectionWidth, height: sectionHeight,
-            color: sectionColor, textColor: sectionTextColor,
+            color: sectionColor,
             groupBoxes, leadRows: rows
         };
     }

@@ -46,17 +46,16 @@ export function renderSectionsSvg(container, layout) {
         .attr('class', 'section-box')
         .attr('transform', (d) => `translate(${d.x}, ${d.y})`);
 
-    // Fill/stroke colors here are per-section data (the section lead's own color
-    // and whichever of black/white contrasts against it — see SectionsLayout),
-    // not theme defaults, so they're set inline rather than via CSS classes —
-    // same reasoning as chart-renderer.js's org-card-accent/avatar/badge colors.
+    // The section's own accent color (its shallowest lead's color — see
+    // SectionsLayout) is an outline only; the fill and everything drawn inside
+    // stay the normal themed neutral, same as the rest of the app.
     sectionGroups.append('rect')
         .attr('class', 'section-rect')
         .attr('width', (d) => d.width)
         .attr('height', (d) => d.height)
         .attr('rx', 10)
         .attr('ry', 10)
-        .attr('fill', (d) => d.color);
+        .attr('stroke', (d) => d.color);
 
     // Section name is drawn exactly once, here, at the top of the box — group
     // names (below) are the only other label in the section, never the section
@@ -66,7 +65,6 @@ export function renderSectionsSvg(container, layout) {
         .attr('x', config.sectionPadding)
         .attr('y', config.sectionTitleHeight / 2)
         .attr('dy', '0.35em')
-        .attr('fill', (d) => d.textColor)
         .text((d) => truncateText(d.name, 28));
 
     sectionGroups.selectAll('rect.group-rect')
@@ -78,8 +76,7 @@ export function renderSectionsSvg(container, layout) {
         .attr('width', (g) => g.width)
         .attr('height', (g) => g.height)
         .attr('rx', 6)
-        .attr('ry', 6)
-        .attr('stroke', (g) => g.textColor);
+        .attr('ry', 6);
 
     sectionGroups.selectAll('text.group-title')
         .data((d) => d.groupBoxes)
@@ -88,7 +85,6 @@ export function renderSectionsSvg(container, layout) {
         .attr('x', (g) => g.x + config.groupPadding)
         .attr('y', (g) => g.y + config.groupTitleHeight / 2)
         .attr('dy', '0.35em')
-        .attr('fill', (g) => g.textColor)
         .text((g) => truncateText(g.name, 24));
 
     const leadRows = sectionGroups.selectAll('g.lead-row')
@@ -103,12 +99,7 @@ export function renderSectionsSvg(container, layout) {
         .attr('cx', 5)
         .attr('cy', config.rowHeight / 2)
         .attr('r', 4)
-        .attr('fill', (r) => r.node.color || '#4B5563')
-        // A lead's own dot color is often the same color as the section box behind
-        // it (department color === section color, in practice) — an outline in the
-        // section's contrast color keeps the dot visible even then.
-        .attr('stroke', (r) => r.textColor)
-        .attr('stroke-width', 1);
+        .attr('fill', (r) => r.node.color || '#4B5563');
 
     // Name and title share one <text> as two <tspan>s (rather than two separate
     // <text> elements at fixed x offsets) so they flow one after the other at
@@ -121,13 +112,10 @@ export function renderSectionsSvg(container, layout) {
 
     leadText.append('tspan')
         .attr('class', 'lead-name')
-        .attr('fill', (r) => r.textColor)
         .text((r) => truncateText(r.node.name || '', 20));
 
     leadText.append('tspan')
         .attr('class', 'lead-title')
-        .attr('fill', (r) => r.textColor)
-        .attr('fill-opacity', 0.75)
         .text((r) => (r.node.title ? '  —  ' + truncateText(r.node.title, 20) : ''));
 
     return { svg, zoomGroup };

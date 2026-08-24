@@ -261,14 +261,29 @@ main {
 /* Sections view: the abstracted department/group view (see docs/adrs, "Sections
    view"). Deliberately no card/avatar per lead — a single text row — since this
    view exists to abstract away from individuals, not to show them in detail.
-   fill/stroke are intentionally NOT set here: each section's color is its own
-   section lead's color (arbitrary per-chart data, not a theme default), so
-   sections-renderer.js/sections-layout.js set it inline, same reasoning as
-   org-card-accent/avatar/badge above — a CSS rule here would just override it. */
-.section-rect { stroke-width: 1px; }
-.section-title { font-size: 14px; font-weight: 700; pointer-events: none; }
-.group-rect { fill: none; stroke-width: 1px; stroke-dasharray: 3 3; }
+   .section-rect's stroke is NOT set here — it's each section's own lead's color
+   (arbitrary per-chart data, not a theme default), set inline by
+   sections-renderer.js/sections-layout.js, same reasoning as
+   org-card-accent/avatar/badge above. Everything else here is a themed neutral,
+   same as the tree view's own cards. */
+.section-rect {
+    fill: var(--card-bg);
+    stroke-width: 2px;
+}
+.section-title {
+    fill: var(--text-strong);
+    font-size: 14px;
+    font-weight: 700;
+    pointer-events: none;
+}
+.group-rect {
+    fill: none;
+    stroke: var(--card-stroke);
+    stroke-width: 1px;
+    stroke-dasharray: 3 3;
+}
 .group-title {
+    fill: var(--dept-text);
     font-size: 10.5px;
     font-weight: 700;
     letter-spacing: 0.3px;
@@ -276,8 +291,8 @@ main {
     pointer-events: none;
 }
 .lead-dot { pointer-events: none; }
-.lead-name { font-size: 12px; font-weight: 600; }
-.lead-title { font-size: 11px; }
+.lead-name { fill: var(--text-strong); font-size: 12px; font-weight: 600; }
+.lead-title { fill: var(--text-muted); font-size: 11px; }
 
 /* Tooltip: deliberately always dark, regardless of theme, for reliable contrast
    against either a light or dark page — so none of these are theme variables. */

@@ -325,11 +325,16 @@ export const fileManagerActions = {
             el.setAttribute('stroke', v('--link-stroke'));
             el.setAttribute('stroke-width', '2');
         });
-        // section-rect/title, group-rect/title, and lead-name/title are NOT baked
-        // here, unlike the tree-view classes above — their fill/stroke is each
-        // section's own lead's color (and a matching contrast color), already set
-        // inline by sections-renderer.js itself, not a theme default this function
-        // would know how to reconstruct.
+        // Sections view boxes/text: a themed neutral, same as .org-card above —
+        // baked the same way. .section-rect's *stroke* is deliberately left
+        // alone: that's each section's own lead's color, set inline by
+        // sections-renderer.js/sections-layout.js, not a theme default.
+        clone.querySelectorAll('.section-rect').forEach((el) => el.setAttribute('fill', v('--card-bg')));
+        clone.querySelectorAll('.section-title').forEach((el) => el.setAttribute('fill', v('--text-strong')));
+        clone.querySelectorAll('.group-rect').forEach((el) => el.setAttribute('stroke', v('--card-stroke')));
+        clone.querySelectorAll('.group-title').forEach((el) => el.setAttribute('fill', v('--dept-text')));
+        clone.querySelectorAll('.lead-name').forEach((el) => el.setAttribute('fill', v('--text-strong')));
+        clone.querySelectorAll('.lead-title').forEach((el) => el.setAttribute('fill', v('--text-muted')));
 
         return clone;
     },
