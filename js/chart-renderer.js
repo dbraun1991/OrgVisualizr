@@ -67,9 +67,14 @@ export class ChartRenderer {
 
     /**
      * @param {Object} layout - Output of LayoutEngine.calculate().
+     * @param {Object} [options] - Render options.
+     * @param {boolean} [options.resetZoom] - Discard the current pan/zoom instead of
+     *   carrying it over to the rebuilt SVG — see setupZoom() below for why a rebuild
+     *   needs this at all, and app.js's renderChart() for which triggers pass it.
      */
-    render(layout) {
+    render(layout, options = {}) {
         if (!this.container) return;
+        const previousTransform = (!options.resetZoom && this.svgElement) ? d3.zoomTransform(this.svgElement) : null;
         this.container.innerHTML = '';
         if (!layout || !layout.root) return;
 
@@ -256,7 +261,7 @@ export class ChartRenderer {
                 renderer.tooltip.classed('hidden', true);
             });
 
-        this.setupZoom(svg, zoomGroup);
+        this.setupZoom(svg, zoomGroup, previousTransform);
         this.svgElement = svg.node();
     }
 
@@ -269,14 +274,17 @@ export class ChartRenderer {
      * `this.svgElement`) keeps working unmodified regardless of which view is
      * currently on screen.
      * @param {Object} layout - Output of SectionsLayout.calculate().
+     * @param {Object} [options] - Render options — see render() above.
+     * @param {boolean} [options.resetZoom] - Discard the current pan/zoom.
      */
-    renderSections(layout) {
+    renderSections(layout, options = {}) {
         if (!this.container) return;
+        const previousTransform = (!options.resetZoom && this.svgElement) ? d3.zoomTransform(this.svgElement) : null;
         this.container.innerHTML = '';
         if (!layout || !layout.sections) return;
 
         const { svg, zoomGroup } = renderSectionsSvg(this.container, layout);
-        this.setupZoom(svg, zoomGroup);
+        this.setupZoom(svg, zoomGroup, previousTransform);
         this.svgElement = svg.node();
     }
 
@@ -302,17 +310,27 @@ export class ChartRenderer {
     }
 
     /**
-     * Enables pan/zoom on the chart canvas.
+     * Enables pan/zoom on the chart canvas. render()/renderSections() both wipe and
+     * rebuild the whole `<svg>` on every call, which means a brand-new DOM node and a
+     * brand-new `d3.zoom()` behavior every time — d3 tracks a zoom transform per-node
+     * (in a property on the node itself), so the previous SVG's transform doesn't
+     * carry over on its own. `initialTransform`, when given, seeds the new zoom
+     * behavior with it via `zoom.transform`, which also fires the 'zoom' handler below
+     * so `zoomGroup`'s own attribute is set to match immediately, instead of only
+     * reacting to the *next* user gesture.
      *
      * @param {d3.Selection} svg - The root SVG selection.
      * @param {d3.Selection} zoomGroup - The group that pan/zoom transforms are applied to.
+     * @param {d3.ZoomTransform} [initialTransform] - A transform to restore, e.g. the
+     *   outgoing SVG's transform captured just before the wipe-and-rebuild.
      */
-    setupZoom(svg, zoomGroup) {
+    setupZoom(svg, zoomGroup, initialTransform) {
         const zoom = d3.zoom()
             .scaleExtent([0.2, 3])
             .on('zoom', (event) => {
                 zoomGroup.attr('transform', event.transform);
             });
         svg.call(zoom);
+        if (initialTransform) svg.call(zoom.transform, initialTransform);
     }
 }

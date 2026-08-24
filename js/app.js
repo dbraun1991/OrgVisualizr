@@ -147,7 +147,11 @@ class App {
                     this.$watch('editorVisible', () => this.updateUrlParams());
                     this.$watch('currentFileName', () => this.updateUrlParams());
                     this.$watch('hideLeaves', () => this.renderChart(this.data));
-                    this.$watch('viewMode', () => this.renderChart(this.data));
+                    // Tree and Sections are different coordinate spaces (different
+                    // content shape, different sizing) — carrying over a pan/zoom
+                    // from one to the other wouldn't land anywhere meaningful, unlike
+                    // hideLeaves/data edits above, which keep the same canvas.
+                    this.$watch('viewMode', () => this.renderChart(this.data, { resetZoom: true }));
 
                     // Keep the raw JSON string and chart in sync whenever the visual editor
                     // mutates the underlying data object.
@@ -216,8 +220,13 @@ class App {
 
                 /**
                  * Parses the raw JSON string into the Alpine data state and triggers a re-render.
+                 * @param {Object} [options] - Passed through to renderChart() — see there.
+                 *   Callers loading a *different* chart (a saved file, an import, the
+                 *   initial load) pass `{ resetZoom: true }`; hand-typing in the JSON tab
+                 *   (this function's own `@input` binding in index.html) does not, since
+                 *   that's iterating on the same chart, same as any other field edit.
                  */
-                updateFromJson() {
+                updateFromJson(options = {}) {
                     try {
                         if (!this.rawJson.trim()) return;
                         const parsed = JSON.parse(this.rawJson);
@@ -227,7 +236,7 @@ class App {
                         }
 
                         this.data = parsed; // Triggers the $watch above
-                        this.renderChart(this.data);
+                        this.renderChart(this.data, options);
                     } catch (error) {
                         this.jsonError = 'JSON Error: ' + error.message;
                     }
@@ -239,17 +248,24 @@ class App {
                  * JSON tab (e.g. a dangling parentId) is visible instead of silently
                  * leaving the previous chart on screen.
                  * @param {Object} jsonData - The internal state tree representing the org chart.
+                 * @param {Object} [options] - Passed through to the renderer.
+                 * @param {boolean} [options.resetZoom] - See ChartRenderer.render()/
+                 *   .renderSections(). Omitted (the common case — any data edit, a
+                 *   hideLeaves toggle, a language change) preserves the current pan/zoom
+                 *   across the rebuild; pass `true` only when the chart being drawn is
+                 *   substantively a *different* one from what was on screen (switching
+                 *   Tree/Sections, loading a different/new/imported chart).
                  */
-                renderChart(jsonData) {
+                renderChart(jsonData, options = {}) {
                     try {
                         const clone = JSON.parse(JSON.stringify(jsonData));
                         const normalizedData = window.app.dataModel.validateAndNormalize(clone);
                         if (this.viewMode === 'sections') {
                             const layout = window.app.sectionsLayout.calculate(normalizedData, { hideLeaves: this.hideLeaves });
-                            window.app.renderer.renderSections(layout);
+                            window.app.renderer.renderSections(layout, options);
                         } else {
                             const layout = window.app.layoutEngine.calculate(normalizedData, { hideLeaves: this.hideLeaves });
-                            window.app.renderer.render(layout);
+                            window.app.renderer.render(layout, options);
                         }
                         this.jsonError = '';
                     } catch (e) {

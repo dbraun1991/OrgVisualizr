@@ -57,7 +57,7 @@ export const fileManagerActions = {
             const dataStr = localStorage.getItem('orgvisualizr_file_' + name);
             if (dataStr) {
                 this.rawJson = dataStr;
-                this.updateFromJson();
+                this.updateFromJson({ resetZoom: true });
                 this.currentFileName = name;
             }
         } catch (e) {
@@ -123,7 +123,7 @@ export const fileManagerActions = {
             ]
         };
         this.rawJson = JSON.stringify(this.data, null, 2);
-        this.renderChart(this.data);
+        this.renderChart(this.data, { resetZoom: true });
     },
 
     /**
@@ -147,7 +147,7 @@ export const fileManagerActions = {
         reader.onerror = (err) => console.error('FileReader error:', err);
         reader.onload = (e) => {
             this.rawJson = e.target.result;
-            this.updateFromJson();
+            this.updateFromJson({ resetZoom: true });
             this.currentFileName = '';
             this.importModalOpen = false;
         };
@@ -199,7 +199,7 @@ export const fileManagerActions = {
             const response = await fetch('data/example.json', { cache: 'no-store' });
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             this.rawJson = await response.text();
-            this.updateFromJson();
+            this.updateFromJson({ resetZoom: true });
         } catch (error) {
             console.error('Failed to initialize OrgVisualizr:', error);
         }
@@ -246,7 +246,7 @@ export const fileManagerActions = {
             }
 
             this.currentFileName = '';
-            this.updateFromJson();
+            this.updateFromJson({ resetZoom: true });
             return true;
         } catch (e) {
             this.jsonError = i18next.t('js.remoteLoadFailedOther') + (e.name === 'AbortError' ? i18next.t('js.remoteLoadFailedTimeout') : e.message);
