@@ -202,7 +202,6 @@ main {
     right: 1rem;
     bottom: 1rem;
     display: flex;
-    flex-direction: row-reverse;
     align-items: flex-end;
     gap: 0.5rem;
     z-index: 5;
