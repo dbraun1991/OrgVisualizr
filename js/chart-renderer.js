@@ -361,12 +361,38 @@ export class ChartRenderer {
      *   outgoing SVG's transform captured just before the wipe-and-rebuild.
      */
     setupZoom(svg, zoomGroup, initialTransform) {
+        const renderer = this;
         const zoom = d3.zoom()
             .scaleExtent([0.2, 3])
             .on('zoom', (event) => {
                 zoomGroup.attr('transform', event.transform);
+                // Lets an external control (the zoom slider) stay a live readout of the
+                // actual level, not just an input — mirrors every wheel/pinch/drag-pan
+                // gesture back out, the same way setZoomLevel() drives gestures in.
+                renderer.container.dispatchEvent(new CustomEvent('zoom-changed', {
+                    bubbles: true,
+                    detail: { scale: event.transform.k }
+                }));
             });
         svg.call(zoom);
-        if (initialTransform) svg.call(zoom.transform, initialTransform);
+        // Always seed (falling back to identity), not just when initialTransform is
+        // given, so the 'zoom' handler above always fires once — keeping the slider
+        // in sync with reality on every render, including a resetZoom back to 100%.
+        svg.call(zoom.transform, initialTransform || d3.zoomIdentity);
+        this.svg = svg;
+        this.zoom = zoom;
+    }
+
+    /**
+     * Jumps the canvas to an absolute zoom level, e.g. from the zoom slider —
+     * d3-zoom's dedicated "set the level" method, as opposed to the relative
+     * scaleBy gestures use. Fires the same 'zoom' event as any gesture, so
+     * zoomGroup's transform and the 'zoom-changed' readout both update from that
+     * one call.
+     * @param {number} scale - Target zoom level (matches scaleExtent, 0.2-3).
+     */
+    setZoomLevel(scale) {
+        if (!this.svg || !this.zoom) return;
+        this.svg.call(this.zoom.scaleTo, scale);
     }
 }

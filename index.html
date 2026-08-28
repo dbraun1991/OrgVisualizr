@@ -22,6 +22,7 @@
 </head>
 <body x-data="orgVisualizrApp"
       @toggle-node.window="onToggleNode($event.detail.id)"
+      @zoom-changed.window="onZoomChanged($event.detail.scale)"
       @keydown.escape.window="onEscapeModal()">
     <header id="header">
         <div class="header-left flex-center">
@@ -374,6 +375,17 @@
         </div>
         <div id="orgvisualizr-container"></div>
         <div id="tooltip" class="tooltip hidden"></div>
+        <div class="canvas-controls">
+            <div class="canvas-control" :title="$store.i18n.t('canvas.gridTitle')">
+                <span x-text="$store.i18n.t('canvas.grid')">Grid</span>
+                <input type="range" min="0" max="100" x-model.number="gridOpacity" @input="onGridOpacityInput()">
+            </div>
+            <div class="canvas-control canvas-control--zoom" :title="$store.i18n.t('canvas.zoomTitle')">
+                <span x-text="$store.i18n.t('canvas.zoom')">Zoom</span>
+                <input type="range" min="20" max="300" x-model.number="zoomLevel" @input="onZoomSliderInput()">
+                <span class="canvas-control-value" x-text="zoomLevel + '%'"></span>
+            </div>
+        </div>
     </main>
     <footer class="site-footer" role="contentinfo">
         <p class="site-footer-inner">

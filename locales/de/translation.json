@@ -29,6 +29,12 @@
     "exportJson": "als JSON",
     "exportText": "als Text"
   },
+  "canvas": {
+    "zoom": "Zoom",
+    "zoomTitle": "Zoomstufe",
+    "grid": "Raster",
+    "gridTitle": "Deckkraft des Punktrasters"
+  },
   "dialog": {
     "cancel": "Abbrechen",
     "ok": "OK",

@@ -29,6 +29,12 @@
     "exportJson": "as JSON",
     "exportText": "as Text"
   },
+  "canvas": {
+    "zoom": "Zoom",
+    "zoomTitle": "Zoom level",
+    "grid": "Grid",
+    "gridTitle": "Dot-grid background opacity"
+  },
   "dialog": {
     "cancel": "Cancel",
     "ok": "OK",

@@ -26,6 +26,7 @@ Then open `http://localhost:8000`.
 
 - **Visual + JSON dual editor** — edit via forms, or edit the raw JSON directly; changes in either one instantly re-render the chart and stay synchronized with the other.
 - **Modern card-based rendering** — D3.js-rendered SVG cards (name, role, department, department-color accent, initials avatar) connected with clean orthogonal connectors, pan/zoom enabled.
+- **Zoom and grid controls** — a slider pinned to the canvas's lower-right corner sets/reads the zoom level (20–300%), alongside a second slider for the background dot-grid's opacity.
 - **Collapsible subtrees** — click any node with reports to collapse/expand its branch; shows a "+N" badge for hidden descendants.
 - **Co-leadership** — a position can be jointly held by multiple people (co-leads, job-sharing), rendered as a card cluster.
 - **Staff placement** — assistant/support roles can render beside their manager with a dashed connector instead of stacked below, matching the classic line-vs-staff org-chart convention.

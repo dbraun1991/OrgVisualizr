@@ -78,6 +78,10 @@ class App {
                 viewMode: 'tree',
                 hideLeaves: false,
                 manageMode: false,
+                /** Percent, mirrors ChartRenderer's d3.zoom scaleExtent [0.2, 3] → [20, 300]. */
+                zoomLevel: 100,
+                /** Percent; drives --grid-dot-opacity (see orgvisualizr.css). */
+                gridOpacity: 100,
                 rawJson: '',
                 jsonError: '',
                 savedFiles: [],
@@ -200,6 +204,35 @@ class App {
                  */
                 onToggleNode(id) {
                     this.toggleCollapseById(id);
+                },
+
+                /**
+                 * Mirrors the canvas's actual d3.zoom level back into the slider —
+                 * fired on every wheel/pinch/drag-pan gesture and every re-render (see
+                 * ChartRenderer.setupZoom()), not just slider drags, so the readout
+                 * never drifts from reality.
+                 * @param {number} scale - The current zoom level (0.2-3).
+                 */
+                onZoomChanged(scale) {
+                    this.zoomLevel = Math.round(scale * 100);
+                },
+
+                /**
+                 * Pushes a slider-driven zoom level onto the canvas (the `@input` binding
+                 * in index.html) — the reverse direction of onZoomChanged() above.
+                 */
+                onZoomSliderInput() {
+                    window.app.renderer.setZoomLevel(this.zoomLevel / 100);
+                },
+
+                /**
+                 * Pushes the Grid slider's value onto --grid-dot-opacity (the `@input`
+                 * binding in index.html) — plain CSS, no renderer/SVG involvement, since
+                 * the dot-grid is a CSS background on #orgvisualizr-container itself
+                 * (untouched by render()/renderSections() wiping the container's children).
+                 */
+                onGridOpacityInput() {
+                    document.documentElement.style.setProperty('--grid-dot-opacity', this.gridOpacity / 100);
                 },
 
                 /**

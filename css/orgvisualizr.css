@@ -24,6 +24,7 @@
     --link-stroke: #555;
     --link-stroke-staff: #777;
     --grid-dot: #262626;
+    --grid-dot-opacity: 1;
     --danger-bg: #4a1414;
     --danger-border-hover: #6a1e1e;
     --danger-text: #ff8a8a;
@@ -180,9 +181,77 @@ main {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    /* color-mix bakes --grid-dot-opacity (0-1, set by the Grid slider) into the dot
+       color itself rather than using CSS opacity on the whole background — opacity
+       would also fade the rendered chart, since it isn't its own layer. */
     background:
-        radial-gradient(circle, var(--grid-dot) 1px, transparent 1px) 0 0/22px 22px,
+        radial-gradient(circle, color-mix(in srgb, var(--grid-dot) calc(var(--grid-dot-opacity) * 100%), transparent) 1px, transparent 1px) 0 0/22px 22px,
         var(--bg-color);
+}
+
+/* Floating Zoom/Grid sliders, pinned to the canvas's lower-right corner (Zoom on
+   the outer-right, Grid just to its left — same relative placement as
+   bpmn-process-creator's own .zoom-control/.grid-opacity-control, the reference
+   this pair is modeled on). Live as a static sibling of #orgvisualizr-container
+   (see index.html) rather than being rendered by ChartRenderer, since
+   render()/renderSections() wipe and rebuild the whole SVG on every change — a
+   DOM-injected control would be destroyed and need re-wiring on every re-render
+   otherwise. */
+.canvas-controls {
+    position: absolute;
+    right: 1rem;
+    bottom: 1rem;
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: flex-end;
+    gap: 0.5rem;
+    z-index: 5;
+}
+
+.canvas-control {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 0.35rem 0.6rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.canvas-control input[type="range"] {
+    width: 100px;
+    accent-color: var(--accent);
+}
+
+.canvas-control-value {
+    min-width: 2.8em;
+    text-align: right;
+    color: var(--text-color);
+}
+
+/* Zoom is the one bpmn-process-creator renders as a vertical, scrollbar-style
+   slider (public/css/canvas.css .zoom-control/.zoom-slider) rather than
+   horizontal like Grid — rotating a horizontal <input type="range"> is the same
+   trick bpmn uses; the 48px vertical margin compensates for the 4px pre-rotate
+   height so the rotated 100px track gets the layout space it visually occupies. */
+.canvas-control--zoom {
+    flex-direction: column;
+    width: 44px;
+    padding: 0.6rem 0.4rem;
+}
+
+.canvas-control--zoom input[type="range"] {
+    width: 100px;
+    height: 4px;
+    margin: 48px 0;
+    transform: rotate(-90deg);
+}
+
+.canvas-control--zoom .canvas-control-value {
+    text-align: center;
 }
 
 /* width/height=100% on the <svg> (set in chart-renderer.js) only take effect if this
